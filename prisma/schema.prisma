@@ -1,0 +1,771 @@
+// SparkNova School — Prisma Schema
+// https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ============================================================
+// 인증 & 사용자
+// ============================================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  username      String?   @unique
+  bio           String?
+  avatarUrl     String?
+  coverUrl      String?
+  role          UserRole  @default(MEMBER)
+  locale        String    @default("ko")
+  timezone      String    @default("Asia/Seoul")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // NextAuth
+  accounts Account[]
+  sessions Session[]
+
+  // 커뮤니티
+  ownedCommunities Community[]       @relation("CommunityOwner")
+  memberships      CommunityMember[]
+
+  // 피드
+  posts    Post[]
+  comments Comment[]
+  likes    Like[]
+
+  // 강좌
+  enrollments  Enrollment[]
+  certificates Certificate[]
+
+  // 게임화
+  pointTransactions PointTransaction[]
+  userLevels        UserLevel[]
+  userBadges        UserBadge[]
+
+  // 결제
+  payments      Payment[]
+  subscriptions Subscription[]
+
+  // Referral
+  referralCodes   ReferralCode[]
+  referredBy      ReferralRecord[] @relation("ReferredUser")
+  referrals       ReferralRecord[] @relation("ReferrerUser")
+  referralRewards ReferralReward[]
+
+  // 팔로우
+  following Follow[] @relation("Follower")
+  followers Follow[] @relation("Following")
+
+  // DM
+  sentMessages  Message[]      @relation("MessageSender")
+  conversations Conversation[] @relation("ConversationParticipants")
+
+  // 알림
+  notifications Notification[]
+
+  // 이벤트
+  eventAttendees EventAttendee[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  MEMBER
+}
+
+// ============================================================
+// 커뮤니티
+// ============================================================
+
+model Community {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  name          String
+  description   String?  @db.Text
+  coverUrl      String?
+  avatarUrl     String?
+  isPublic      Boolean  @default(true)
+  isActive      Boolean  @default(true)
+  ownerId       String
+  country       String   @default("KR")
+  language      String   @default("ko")
+  memberCount   Int      @default(0)
+  postCount     Int      @default(0)
+  showClassroom Boolean  @default(true)
+  showCalendar  Boolean  @default(true)
+  joinType      JoinType @default(FREE)
+  price         Int?
+  currency      String   @default("KRW")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  owner         User                @relation("CommunityOwner", fields: [ownerId], references: [id])
+  members       CommunityMember[]
+  categories    CommunityCategory[]
+  posts         Post[]
+  courses       Course[]
+  events        Event[]
+  levelConfigs  LevelConfig[]
+  products      Product[]
+  referralCodes ReferralCode[]
+
+  @@map("communities")
+}
+
+model CommunityMember {
+  id          String     @id @default(cuid())
+  communityId String
+  userId      String
+  role        MemberRole @default(MEMBER)
+  joinedAt    DateTime   @default(now())
+  expiresAt   DateTime?
+  isActive    Boolean    @default(true)
+
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([communityId, userId])
+  @@map("community_members")
+}
+
+model CommunityCategory {
+  id          String @id @default(cuid())
+  communityId String
+  name        String
+  slug        String
+  color       String?
+  order       Int    @default(0)
+
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  posts     Post[]
+
+  @@unique([communityId, slug])
+  @@map("community_categories")
+}
+
+enum JoinType {
+  FREE
+  PAID
+  ONE_TIME
+  INVITE
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  MODERATOR
+  MEMBER
+}
+
+// ============================================================
+// 소셜 피드
+// ============================================================
+
+model Post {
+  id             String   @id @default(cuid())
+  communityId    String
+  authorId       String
+  categoryId     String?
+  title          String?
+  content        String   @db.Text
+  mediaUrls      String[]
+  isPinned       Boolean  @default(false)
+  isAnnouncement Boolean  @default(false)
+  likeCount      Int      @default(0)
+  commentCount   Int      @default(0)
+  viewCount      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  deletedAt      DateTime?
+
+  community Community          @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  author    User               @relation(fields: [authorId], references: [id])
+  category  CommunityCategory? @relation(fields: [categoryId], references: [id])
+  comments  Comment[]
+  likes     Like[]
+
+  @@map("posts")
+}
+
+model Comment {
+  id        String    @id @default(cuid())
+  postId    String
+  authorId  String
+  parentId  String?
+  content   String    @db.Text
+  likeCount Int       @default(0)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  post    Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author  User      @relation(fields: [authorId], references: [id])
+  parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies Comment[] @relation("CommentReplies")
+  likes   Like[]
+
+  @@map("comments")
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String?
+  commentId String?
+  createdAt DateTime @default(now())
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post    Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  comment Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@unique([userId, commentId])
+  @@map("likes")
+}
+
+// ============================================================
+// 강좌 (LMS)
+// ============================================================
+
+model Course {
+  id            String   @id @default(cuid())
+  communityId   String
+  title         String
+  description   String?  @db.Text
+  thumbnailUrl  String?
+  isPublished   Boolean  @default(false)
+  isFree        Boolean  @default(true)
+  price         Int?
+  order         Int      @default(0)
+  requiredLevel Int?
+  enrollCount   Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  community    Community    @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  modules      Module[]
+  enrollments  Enrollment[]
+  certificates Certificate[]
+
+  @@map("courses")
+}
+
+model Module {
+  id          String   @id @default(cuid())
+  courseId    String
+  title       String
+  description String?  @db.Text
+  order       Int      @default(0)
+  isPublished Boolean  @default(false)
+  drip        Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  course  Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons Lesson[]
+
+  @@map("modules")
+}
+
+model Lesson {
+  id          String     @id @default(cuid())
+  moduleId    String
+  title       String
+  description String?    @db.Text
+  type        LessonType @default(VIDEO)
+  videoUrl    String?
+  videoId     String?
+  duration    Int?
+  fileUrl     String?
+  content     String?    @db.Text
+  order       Int        @default(0)
+  isPublished Boolean    @default(false)
+  isFree      Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  module   Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  progress LessonProgress[]
+
+  @@map("lessons")
+}
+
+model Enrollment {
+  id          String    @id @default(cuid())
+  courseId    String
+  userId      String
+  enrolledAt  DateTime  @default(now())
+  completedAt DateTime?
+  progress    Float     @default(0)
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, userId])
+  @@map("enrollments")
+}
+
+model LessonProgress {
+  id          String    @id @default(cuid())
+  lessonId    String
+  userId      String
+  isCompleted Boolean   @default(false)
+  watchedSec  Int       @default(0)
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([lessonId, userId])
+  @@map("lesson_progress")
+}
+
+model Certificate {
+  id             String   @id @default(cuid())
+  courseId       String
+  userId         String
+  issuedAt       DateTime @default(now())
+  certificateUrl String?
+
+  course Course @relation(fields: [courseId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([courseId, userId])
+  @@map("certificates")
+}
+
+enum LessonType {
+  VIDEO
+  TEXT
+  FILE
+  QUIZ
+}
+
+// ============================================================
+// 게임화
+// ============================================================
+
+model UserLevel {
+  id          String   @id @default(cuid())
+  userId      String
+  communityId String
+  points      Int      @default(0)
+  level       Int      @default(1)
+  updatedAt   DateTime @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, communityId])
+  @@map("user_levels")
+}
+
+model PointTransaction {
+  id          String    @id @default(cuid())
+  userId      String
+  communityId String
+  type        PointType
+  points      Int
+  referenceId String?
+  description String?
+  createdAt   DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("point_transactions")
+}
+
+model LevelConfig {
+  id          String @id @default(cuid())
+  communityId String
+  level       Int
+  name        String
+  minPoints   Int
+
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@unique([communityId, level])
+  @@map("level_configs")
+}
+
+model Badge {
+  id          String  @id @default(cuid())
+  communityId String?
+  name        String
+  description String?
+  iconUrl     String?
+  condition   String  // JSON 조건 정의
+
+  userBadges UserBadge[]
+
+  @@map("badges")
+}
+
+model UserBadge {
+  id       String   @id @default(cuid())
+  userId   String
+  badgeId  String
+  earnedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id])
+
+  @@unique([userId, badgeId])
+  @@map("user_badges")
+}
+
+enum PointType {
+  POST_CREATED
+  COMMENT_CREATED
+  POST_LIKED
+  COMMENT_LIKED
+  LESSON_COMPLETED
+  COURSE_COMPLETED
+  EVENT_ATTENDED
+  REFERRAL_SUCCESS
+  DAILY_CHECKIN
+  MANUAL_GRANT
+  MANUAL_DEDUCT
+}
+
+// ============================================================
+// 결제
+// ============================================================
+
+model Product {
+  id          String      @id @default(cuid())
+  communityId String
+  type        ProductType
+  name        String
+  description String?
+  price       Int
+  currency    String      @default("KRW")
+  interval    String?
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+
+  community     Community      @relation(fields: [communityId], references: [id])
+  payments      Payment[]
+  subscriptions Subscription[]
+
+  @@map("products")
+}
+
+model Payment {
+  id             String        @id @default(cuid())
+  userId         String
+  productId      String?
+  amount         Int
+  currency       String        @default("KRW")
+  status         PaymentStatus @default(PENDING)
+  method         String?
+  tossOrderId    String?       @unique
+  tossPaymentKey String?       @unique
+  metadata       Json?
+  paidAt         DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id])
+  product Product? @relation(fields: [productId], references: [id])
+  refunds Refund[]
+
+  @@map("payments")
+}
+
+model Subscription {
+  id          String             @id @default(cuid())
+  userId      String
+  productId   String
+  status      SubscriptionStatus @default(ACTIVE)
+  startedAt   DateTime           @default(now())
+  expiresAt   DateTime?
+  cancelledAt DateTime?
+  billingKey  String?
+
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("subscriptions")
+}
+
+model Refund {
+  id         String   @id @default(cuid())
+  paymentId  String
+  amount     Int
+  reason     String?
+  refundedAt DateTime @default(now())
+
+  payment Payment @relation(fields: [paymentId], references: [id])
+
+  @@map("refunds")
+}
+
+enum ProductType {
+  MEMBERSHIP
+  COURSE
+  BUNDLE
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+  CANCELLED
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  EXPIRED
+}
+
+// ============================================================
+// Referral
+// ============================================================
+
+model ReferralCode {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  userId      String
+  communityId String?
+  clickCount  Int      @default(0)
+  useCount    Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  user      User            @relation(fields: [userId], references: [id])
+  community Community?      @relation(fields: [communityId], references: [id])
+  records   ReferralRecord[]
+
+  @@map("referral_codes")
+}
+
+model ReferralRecord {
+  id          String         @id @default(cuid())
+  codeId      String
+  referrerId  String
+  referredId  String
+  status      ReferralStatus @default(PENDING)
+  convertedAt DateTime?
+  createdAt   DateTime       @default(now())
+
+  code     ReferralCode    @relation(fields: [codeId], references: [id])
+  referrer User            @relation("ReferrerUser", fields: [referrerId], references: [id])
+  referred User            @relation("ReferredUser", fields: [referredId], references: [id])
+  rewards  ReferralReward[]
+
+  @@map("referral_records")
+}
+
+model ReferralReward {
+  id        String       @id @default(cuid())
+  recordId  String
+  userId    String
+  type      RewardType
+  value     Int
+  status    RewardStatus @default(PENDING)
+  grantedAt DateTime?
+  createdAt DateTime     @default(now())
+
+  record ReferralRecord @relation(fields: [recordId], references: [id])
+  user   User           @relation(fields: [userId], references: [id])
+
+  @@map("referral_rewards")
+}
+
+enum ReferralStatus {
+  PENDING
+  CONVERTED
+  EXPIRED
+}
+
+enum RewardType {
+  POINTS
+  DISCOUNT
+  FREE_MONTH
+  CASH
+}
+
+enum RewardStatus {
+  PENDING
+  GRANTED
+  CANCELLED
+}
+
+// ============================================================
+// 팔로우
+// ============================================================
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@map("follows")
+}
+
+// ============================================================
+// DM (다이렉트 메시지)
+// ============================================================
+
+model Conversation {
+  id            String    @id @default(cuid())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastMessage   String?
+  lastMessageAt DateTime?
+
+  participants User[]    @relation("ConversationParticipants")
+  messages     Message[]
+
+  @@map("conversations")
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  senderId       String
+  content        String   @db.Text
+  isRead         Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation("MessageSender", fields: [senderId], references: [id])
+
+  @@map("messages")
+}
+
+// ============================================================
+// 이벤트 & 캘린더
+// ============================================================
+
+model Event {
+  id           String    @id @default(cuid())
+  communityId  String
+  title        String
+  description  String?   @db.Text
+  startAt      DateTime
+  endAt        DateTime?
+  timezone     String    @default("Asia/Seoul")
+  location     String?
+  isOnline     Boolean   @default(true)
+  meetingUrl   String?
+  maxAttendees Int?
+  createdAt    DateTime  @default(now())
+
+  community Community       @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  attendees EventAttendee[]
+
+  @@map("events")
+}
+
+model EventAttendee {
+  id       String   @id @default(cuid())
+  eventId  String
+  userId   String
+  joinedAt DateTime @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@map("event_attendees")
+}
+
+// ============================================================
+// 알림
+// ============================================================
+
+model Notification {
+  id            String           @id @default(cuid())
+  userId        String
+  type          NotificationType
+  title         String
+  body          String?
+  referenceId   String?
+  referenceType String?
+  isRead        Boolean          @default(false)
+  createdAt     DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+enum NotificationType {
+  POST_LIKED
+  POST_COMMENTED
+  COMMENT_REPLIED
+  COMMENT_LIKED
+  NEW_MEMBER_JOINED
+  LEVEL_UP
+  BADGE_EARNED
+  COURSE_PUBLISHED
+  EVENT_REMINDER
+  PAYMENT_SUCCESS
+  PAYMENT_FAILED
+  REFERRAL_SUCCESS
+  SYSTEM
+}
