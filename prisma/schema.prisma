@@ -6,9 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  // url은 prisma.config.ts에서 DATABASE_URL 환경변수로 관리
 }
 
 // ============================================================
@@ -49,7 +48,6 @@ model User {
 
   // 게임화
   pointTransactions PointTransaction[]
-  userLevels        UserLevel[]
   userBadges        UserBadge[]
 
   // 결제
@@ -75,6 +73,12 @@ model User {
 
   // 이벤트
   eventAttendees EventAttendee[]
+
+  // 레슨 진도
+  lessonProgress LessonProgress[]
+
+  // 레벨 (커뮤니티별)
+  userLevels UserLevel[]
 
   @@map("users")
 }
@@ -160,6 +164,7 @@ model Community {
   levelConfigs  LevelConfig[]
   products      Product[]
   referralCodes ReferralCode[]
+  userLevels    UserLevel[]
 
   @@map("communities")
 }
