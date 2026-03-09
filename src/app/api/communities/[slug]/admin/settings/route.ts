@@ -22,7 +22,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const community = await getOwnerCommunity(slug, session.user.id);
   if (!community) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const { name, description, isPublic, joinType, price, showClassroom, showCalendar } = await req.json();
+  const { name, description, isPublic, joinType, price, showClassroom, showCalendar, avatarUrl, coverUrl } = await req.json();
 
   const updated = await db.community.update({
     where: { id: community.id },
@@ -34,6 +34,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       ...(price !== undefined ? { price } : {}),
       ...(showClassroom !== undefined ? { showClassroom } : {}),
       ...(showCalendar !== undefined ? { showCalendar } : {}),
+      ...(avatarUrl !== undefined ? { avatarUrl: avatarUrl || null } : {}),
+      ...(coverUrl !== undefined ? { coverUrl: coverUrl || null } : {}),
     },
     select: { id: true, name: true, slug: true },
   });

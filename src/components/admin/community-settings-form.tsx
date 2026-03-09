@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ImageUpload } from "@/components/ui/image-upload";
 
 interface CommunitySettings {
   name: string;
@@ -10,6 +11,8 @@ interface CommunitySettings {
   price: number | null;
   showClassroom: boolean;
   showCalendar: boolean;
+  avatarUrl?: string;
+  coverUrl?: string;
 }
 
 interface Props {
@@ -60,6 +63,30 @@ export function CommunitySettingsForm({ slug, initial }: Props) {
           onChange={(e) => set("name", e.target.value)}
           className="w-full border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-orange-400"
         />
+      </div>
+
+      {/* 이미지 업로드 */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium">아바타 이미지</label>
+          <ImageUpload
+            value={form.avatarUrl}
+            onChange={(url) => set("avatarUrl" as keyof CommunitySettings, url)}
+            uploadType="avatar"
+            aspectRatio="square"
+            placeholder="커뮤니티 아이콘"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium">커버 이미지</label>
+          <ImageUpload
+            value={form.coverUrl}
+            onChange={(url) => set("coverUrl" as keyof CommunitySettings, url)}
+            uploadType="cover"
+            aspectRatio="wide"
+            placeholder="커버 이미지"
+          />
+        </div>
       </div>
 
       {/* 설명 */}

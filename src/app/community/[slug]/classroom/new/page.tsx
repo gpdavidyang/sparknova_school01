@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { ImageUpload } from "@/components/ui/image-upload";
 
 interface Lesson {
   title: string;
@@ -30,6 +31,7 @@ export default function NewCoursePage() {
   const [description, setDescription] = useState("");
   const [isFree, setIsFree] = useState(true);
   const [price, setPrice] = useState("");
+  const [thumbnailUrl, setThumbnailUrl] = useState("");
   const [modules, setModules] = useState<Module[]>([
     { title: "모듈 1", lessons: [{ title: "", type: "TEXT", content: "", videoUrl: "" }], open: true },
   ]);
@@ -77,6 +79,7 @@ export default function NewCoursePage() {
       body: JSON.stringify({
         title, description, isFree,
         price: isFree ? null : parseInt(price) || 0,
+        thumbnailUrl: thumbnailUrl || null,
         modules: modules.map((m) => ({
           title: m.title,
           lessons: m.lessons.filter((l) => l.title.trim()),
@@ -110,6 +113,16 @@ export default function NewCoursePage() {
             <div className="space-y-2">
               <Label>강좌 제목 *</Label>
               <Input placeholder="예: 마케팅 기초부터 실전까지" value={title} onChange={(e) => setTitle(e.target.value)} required />
+            </div>
+            <div className="space-y-2">
+              <Label>썸네일 이미지</Label>
+              <ImageUpload
+                value={thumbnailUrl}
+                onChange={setThumbnailUrl}
+                uploadType="thumbnail"
+                aspectRatio="wide"
+                placeholder="강좌 썸네일 이미지 업로드 (권장: 16:9)"
+              />
             </div>
             <div className="space-y-2">
               <Label>강좌 소개</Label>

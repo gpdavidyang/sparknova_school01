@@ -4,6 +4,7 @@ import { getLevelConfig } from "@/lib/gamification";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Medal } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -132,9 +133,11 @@ export default async function LeaderboardPage({ params, searchParams }: Props) {
         })}
 
         {rankings.length === 0 && (
-          <p className="text-center text-muted-foreground py-12">
-            아직 활동 내역이 없습니다. 첫 번째로 포인트를 획득해보세요!
-          </p>
+          <EmptyState
+            icon={Trophy}
+            title="아직 활동 내역이 없습니다"
+            description="첫 번째로 포인트를 획득해보세요!"
+          />
         )}
       </div>
     </div>

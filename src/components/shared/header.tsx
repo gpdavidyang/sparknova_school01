@@ -81,7 +81,10 @@ export function Header({ myCommunities = [] }: HeaderProps) {
                     <div className="px-2 pb-1.5 text-xs text-muted-foreground truncate">{user.email}</div>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem>
-                      <Link href="/dashboard" className="w-full block">내 대시보드</Link>
+                      <Link href="/profile" className="w-full block">내 프로필</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Link href="/dashboard" className="w-full block">크리에이터 대시보드</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
                       <Link href="/my/payments" className="w-full block">결제 내역</Link>

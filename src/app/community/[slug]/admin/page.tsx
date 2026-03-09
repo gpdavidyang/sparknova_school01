@@ -29,7 +29,7 @@ export default async function AdminPage({ params, searchParams }: Props) {
 
   const community = await db.community.findUnique({
     where: { slug },
-    select: { id: true, ownerId: true, name: true, description: true, isPublic: true, joinType: true, price: true, showClassroom: true, showCalendar: true },
+    select: { id: true, ownerId: true, name: true, description: true, isPublic: true, joinType: true, price: true, showClassroom: true, showCalendar: true, avatarUrl: true, coverUrl: true },
   });
   if (!community || community.ownerId !== session.user.id) notFound();
 
@@ -89,6 +89,8 @@ export default async function AdminPage({ params, searchParams }: Props) {
             price: community.price,
             showClassroom: community.showClassroom,
             showCalendar: community.showCalendar,
+            avatarUrl: community.avatarUrl ?? "",
+            coverUrl: community.coverUrl ?? "",
           }}
         />
       )}
