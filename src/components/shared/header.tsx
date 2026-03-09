@@ -72,6 +72,9 @@ export function Header() {
                     <Link href="/profile" className="w-full block">프로필</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
+                    <Link href="/my/payments" className="w-full block">결제 내역</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
                     <Link href="/referral" className="w-full block">추천인 센터</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />

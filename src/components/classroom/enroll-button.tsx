@@ -28,7 +28,10 @@ export function EnrollButton({ courseId, isFree, enrolled: initialEnrolled }: Pr
 
   if (!isFree) {
     return (
-      <Button className="bg-orange-500 hover:bg-orange-600">
+      <Button
+        className="bg-orange-500 hover:bg-orange-600"
+        onClick={() => router.push(`/checkout/course/${courseId}`)}
+      >
         결제하고 수강하기
       </Button>
     );

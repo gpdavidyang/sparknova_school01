@@ -35,7 +35,7 @@ export default async function CommunityLayout({ children, params }: Props) {
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
 
-    const [userLevel, checkinToday, myRankCount] = await Promise.all([
+    const [userLevel, checkinToday] = await Promise.all([
       db.userLevel.findUnique({
         where: { userId_communityId: { userId: session.user.id, communityId: community.id } },
       }),
@@ -45,12 +45,6 @@ export default async function CommunityLayout({ children, params }: Props) {
           communityId: community.id,
           type: "DAILY_CHECKIN",
           createdAt: { gte: todayStart },
-        },
-      }),
-      db.userLevel.count({
-        where: {
-          communityId: community.id,
-          points: { gt: 0 },
         },
       }),
     ]);
@@ -96,7 +90,12 @@ export default async function CommunityLayout({ children, params }: Props) {
             </div>
           </div>
           <div className="pb-1">
-            <JoinButton slug={slug} initialJoined={isJoined} isOwner={isOwner} />
+            <JoinButton
+              slug={slug}
+              initialJoined={isJoined}
+              isOwner={isOwner}
+              isPaid={community.joinType === "PAID"}
+            />
           </div>
         </div>
       </div>

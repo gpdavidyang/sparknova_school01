@@ -10,9 +10,10 @@ interface Props {
   slug: string;
   initialJoined: boolean;
   isOwner: boolean;
+  isPaid?: boolean;
 }
 
-export function JoinButton({ slug, initialJoined, isOwner }: Props) {
+export function JoinButton({ slug, initialJoined, isOwner, isPaid = false }: Props) {
   const router = useRouter();
   const [joined, setJoined] = useState(initialJoined);
   const [loading, setLoading] = useState(false);
@@ -20,6 +21,12 @@ export function JoinButton({ slug, initialJoined, isOwner }: Props) {
   if (isOwner) return null;
 
   async function handleClick() {
+    // 유료 커뮤니티 + 미가입: 결제 페이지로 이동
+    if (!joined && isPaid) {
+      router.push(`/checkout/community/${slug}`);
+      return;
+    }
+
     setLoading(true);
     const res = await fetch(`/api/communities/${slug}/join`, { method: "POST" });
     setLoading(false);
@@ -55,7 +62,7 @@ export function JoinButton({ slug, initialJoined, isOwner }: Props) {
       ) : (
         <>
           <UserPlus className="h-4 w-4 mr-1" />
-          가입하기
+          {isPaid ? "구독하기" : "가입하기"}
         </>
       )}
     </Button>
