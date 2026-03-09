@@ -33,13 +33,24 @@ export async function POST(
     await db.like.create({ data: { userId, postId } });
     await db.post.update({ where: { id: postId }, data: { likeCount: { increment: 1 } } });
 
-    // 게시물 작성자에게 포인트 지급 (자기 자신 제외)
+    // 게시물 작성자에게 포인트 + 알림 (자기 자신 제외)
     if (post.authorId !== userId) {
       await grantPoints({
         userId: post.authorId,
         communityId: post.communityId,
         type: "POST_LIKED",
         referenceId: postId,
+      });
+
+      void db.notification.create({
+        data: {
+          userId: post.authorId,
+          type: "POST_LIKED",
+          title: "게시글에 좋아요가 눌렸습니다.",
+          body: post.content.slice(0, 80),
+          referenceId: postId,
+          referenceType: "post",
+        },
       });
     }
 

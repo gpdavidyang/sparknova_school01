@@ -28,7 +28,7 @@ export function Sidebar({ myCommunities = [] }: SidebarProps) {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 border-r bg-background p-4 flex flex-col">
+    <aside className="hidden lg:flex fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 border-r bg-background p-4 flex-col">
       <nav className="flex flex-col gap-1">
         {navItems.map(({ href, icon: Icon, label }) => (
           <Link

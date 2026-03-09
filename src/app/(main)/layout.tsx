@@ -19,11 +19,15 @@ export default async function MainLayout({ children }: { children: React.ReactNo
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <Header myCommunities={myCommunities} />
       <div className="flex">
+        {/* 데스크탑 사이드바 */}
         <Sidebar myCommunities={myCommunities} />
-        <main className="flex-1 ml-64 pt-16 p-6 max-w-4xl">
-          {children}
+        {/* 메인 콘텐츠: 모바일은 전체 너비, 데스크탑은 사이드바 여백 */}
+        <main className="flex-1 pt-16 p-4 sm:p-6 lg:ml-64 min-w-0">
+          <div className="max-w-4xl mx-auto">
+            {children}
+          </div>
         </main>
       </div>
     </div>

@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { Zap, Users, BookOpen, Trophy, Gift, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 const features = [
   {
@@ -50,13 +48,13 @@ export default function HomePage() {
         <div className="flex gap-3 justify-center">
           <Link
             href="/community/new"
-            className={cn(buttonVariants({ size: "lg" }), "bg-orange-500 hover:bg-orange-600")}
+            className="inline-flex items-center justify-center rounded-md px-8 py-3 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 transition-colors"
           >
             커뮤니티 만들기 <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
           <Link
             href="/explore"
-            className={buttonVariants({ size: "lg", variant: "outline" })}
+            className="inline-flex items-center justify-center rounded-md px-8 py-3 text-sm font-medium border border-input bg-background hover:bg-muted transition-colors"
           >
             커뮤니티 탐색
           </Link>

@@ -6,8 +6,6 @@ import {
   LayoutDashboard, Users, BookOpen, TrendingUp,
   Plus, ArrowRight, DollarSign, Star,
 } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -116,7 +114,7 @@ export default async function DashboardPage() {
         </div>
         <Link
           href="/community/new"
-          className={cn(buttonVariants({ size: "sm" }), "bg-orange-500 hover:bg-orange-600")}
+          className="inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 transition-colors"
         >
           <Plus className="h-4 w-4 mr-1" />
           커뮤니티 만들기
@@ -147,7 +145,7 @@ export default async function DashboardPage() {
             <p>아직 운영 중인 커뮤니티가 없습니다.</p>
             <Link
               href="/community/new"
-              className={cn(buttonVariants({ size: "sm" }), "mt-4 bg-orange-500 hover:bg-orange-600")}
+              className="inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 transition-colors mt-4"
             >
               첫 커뮤니티 만들기
             </Link>

@@ -2,10 +2,11 @@ import { redirect, notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getLevelConfig } from "@/lib/gamification";
-import { Settings, BookOpen, Users, Star } from "lucide-react";
+import { Settings, BookOpen, Users, Star, Sliders } from "lucide-react";
 import { CoursePublishToggle } from "@/components/admin/course-publish-toggle";
 import { MemberActions } from "@/components/admin/member-actions";
 import { LevelConfigForm } from "@/components/admin/level-config-form";
+import { CommunitySettingsForm } from "@/components/admin/community-settings-form";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -28,14 +29,15 @@ export default async function AdminPage({ params, searchParams }: Props) {
 
   const community = await db.community.findUnique({
     where: { slug },
-    select: { id: true, ownerId: true, name: true },
+    select: { id: true, ownerId: true, name: true, description: true, isPublic: true, joinType: true, price: true, showClassroom: true, showCalendar: true },
   });
   if (!community || community.ownerId !== session.user.id) notFound();
 
   const tabs = [
-    { key: "courses", label: "강좌 관리", icon: BookOpen },
-    { key: "members", label: "멤버 관리", icon: Users },
-    { key: "levels",  label: "레벨 설정", icon: Star },
+    { key: "courses",  label: "강좌 관리", icon: BookOpen },
+    { key: "members",  label: "멤버 관리", icon: Users },
+    { key: "levels",   label: "레벨 설정", icon: Star },
+    { key: "settings", label: "커뮤니티 설정", icon: Sliders },
   ];
 
   return (
@@ -75,6 +77,21 @@ export default async function AdminPage({ params, searchParams }: Props) {
       {tab === "members" && <MembersTab slug={slug} communityId={community.id} />}
       {/* 레벨 설정 */}
       {tab === "levels" && <LevelsTab slug={slug} communityId={community.id} />}
+      {/* 커뮤니티 설정 */}
+      {tab === "settings" && (
+        <CommunitySettingsForm
+          slug={slug}
+          initial={{
+            name: community.name,
+            description: community.description ?? "",
+            isPublic: community.isPublic,
+            joinType: community.joinType,
+            price: community.price,
+            showClassroom: community.showClassroom,
+            showCalendar: community.showCalendar,
+          }}
+        />
+      )}
     </div>
   );
 }

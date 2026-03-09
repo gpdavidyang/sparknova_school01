@@ -3,8 +3,6 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Award, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 interface Props {
   params: Promise<{ slug: string; courseId: string }>;
@@ -62,13 +60,13 @@ export default async function CertificatePage({ params }: Props) {
         <div className="flex gap-3 justify-center">
           <Link
             href={`/community/${slug}/classroom`}
-            className={cn(buttonVariants({ variant: "outline" }))}
+            className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium border border-input bg-background hover:bg-muted transition-colors"
           >
             클래스룸으로 돌아가기
           </Link>
           <Link
             href={`/community/${slug}/classroom/${courseId}`}
-            className={cn(buttonVariants(), "bg-orange-500 hover:bg-orange-600")}
+            className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 transition-colors"
           >
             강좌 다시 보기
           </Link>
