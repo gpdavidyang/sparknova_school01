@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { confirmTossPayment } from "@/lib/toss";
+import { notifyPaymentSuccess } from "@/lib/solapi";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -64,6 +65,17 @@ export async function POST(req: NextRequest) {
         data: { enrollCount: { increment: 1 } },
       });
 
+      // 카카오 알림톡 (전화번호 있는 경우)
+      const user = await db.user.findUnique({
+        where: { id: session.user.id },
+        select: { name: true },
+      });
+      if (user?.name) {
+        // phone 필드가 스키마에 추가되면 활성화
+        // await notifyPaymentSuccess({ phone: user.phone, userName: user.name, orderName: tossData.orderName, amount });
+        void notifyPaymentSuccess({ phone: "", userName: user.name, orderName: tossData.orderName, amount });
+      }
+
       return NextResponse.json({ ok: true, type: "course", courseId });
     }
 
@@ -113,6 +125,15 @@ export async function POST(req: NextRequest) {
         where: { id: community.id },
         data: { memberCount: { increment: 1 } },
       });
+
+      // 카카오 알림톡
+      const commUser = await db.user.findUnique({
+        where: { id: session.user.id },
+        select: { name: true },
+      });
+      if (commUser?.name) {
+        void notifyPaymentSuccess({ phone: "", userName: commUser.name, orderName: tossData.orderName, amount });
+      }
 
       return NextResponse.json({ ok: true, type: "community", communitySlug });
     }
