@@ -3,15 +3,16 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { MessageSquare, BookOpen, Calendar, Users, Trophy } from "lucide-react";
+import { MessageSquare, BookOpen, Calendar, Users, Trophy, Settings } from "lucide-react";
 
 interface Props {
   slug: string;
   showClassroom: boolean;
   showCalendar: boolean;
+  isOwner?: boolean;
 }
 
-export function CommunityNav({ slug, showClassroom, showCalendar }: Props) {
+export function CommunityNav({ slug, showClassroom, showCalendar, isOwner }: Props) {
   const pathname = usePathname();
   const base = `/community/${slug}`;
 
@@ -21,6 +22,7 @@ export function CommunityNav({ slug, showClassroom, showCalendar }: Props) {
     { href: `${base}/calendar`,      label: "캘린더",   icon: Calendar,      always: false, show: showCalendar },
     { href: `${base}/members`,       label: "멤버",     icon: Users,         always: true },
     { href: `${base}/leaderboard`,   label: "리더보드", icon: Trophy,        always: true },
+    { href: `${base}/admin`,         label: "관리",     icon: Settings,      always: false, show: isOwner },
   ].filter((t) => t.always || t.show);
 
   return (

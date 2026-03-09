@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { grantPoints } from "@/lib/gamification";
+import { checkAndGrantReferralBadges } from "@/lib/badges";
 
 export async function POST(req: NextRequest) {
   const { name, email, password } = await req.json();
@@ -76,6 +77,7 @@ export async function POST(req: NextRequest) {
           type: "REFERRAL_SUCCESS",
           referenceId: record.id,
         });
+        void checkAndGrantReferralBadges({ userId: referralCode.userId, communityId });
       }
     }
   }

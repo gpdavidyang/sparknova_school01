@@ -105,6 +105,7 @@ export default async function CommunityLayout({ children, params }: Props) {
         slug={slug}
         showClassroom={community.showClassroom}
         showCalendar={community.showCalendar}
+        isOwner={isOwner}
       />
 
       {/* 컨텐츠 + 사이드바 */}
