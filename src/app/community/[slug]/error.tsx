@@ -21,7 +21,7 @@ export default function CommunityError({
       <p className="text-sm text-muted-foreground">페이지를 불러오는 중 오류가 발생했습니다.</p>
       <button
         onClick={reset}
-        className="px-4 py-2 text-sm font-medium bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors"
+        className="px-4 py-2 text-sm font-medium bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
       >
         다시 시도
       </button>

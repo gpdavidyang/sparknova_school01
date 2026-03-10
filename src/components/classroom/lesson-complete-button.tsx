@@ -46,7 +46,7 @@ export function LessonCompleteButton({ lessonId, isCompleted: init, nextLessonHr
     <Button
       onClick={handleComplete}
       disabled={loading}
-      className={completed ? "bg-green-500 hover:bg-green-600" : "bg-orange-500 hover:bg-orange-600"}
+      className={completed ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600"}
     >
       {completed ? (
         <>

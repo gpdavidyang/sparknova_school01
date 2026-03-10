@@ -1,7 +1,10 @@
 import { db } from "@/lib/db";
 import { PostCard } from "./post-card";
+import { LoadMorePosts } from "./load-more-posts";
 import { EmptyState } from "@/components/ui/empty-state";
 import { MessageSquare } from "lucide-react";
+
+const LIMIT = 20;
 
 interface Props {
   communityId: string;
@@ -9,7 +12,7 @@ interface Props {
 }
 
 export async function PostFeed({ communityId, communitySlug }: Props) {
-  const posts = await db.post.findMany({
+  const raw = await db.post.findMany({
     where: { communityId, deletedAt: null },
     include: {
       author: { select: { id: true, name: true, avatarUrl: true, username: true } },
@@ -17,8 +20,12 @@ export async function PostFeed({ communityId, communitySlug }: Props) {
       _count: { select: { comments: true, likes: true } },
     },
     orderBy: [{ isPinned: "desc" }, { createdAt: "desc" }],
-    take: 20,
+    take: LIMIT + 1,
   });
+
+  const hasMore = raw.length > LIMIT;
+  const posts = hasMore ? raw.slice(0, LIMIT) : raw;
+  const nextCursor = hasMore ? posts[posts.length - 1].id : null;
 
   if (posts.length === 0) {
     return (
@@ -35,6 +42,7 @@ export async function PostFeed({ communityId, communitySlug }: Props) {
       {posts.map((post) => (
         <PostCard key={post.id} post={post} communitySlug={communitySlug} />
       ))}
+      <LoadMorePosts communitySlug={communitySlug} initialCursor={nextCursor} />
     </div>
   );
 }

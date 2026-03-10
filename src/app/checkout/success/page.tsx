@@ -70,7 +70,7 @@ export default function CheckoutSuccessPage() {
   if (status === "loading") {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
-        <Loader2 className="h-10 w-10 text-orange-500 animate-spin" />
+        <Loader2 className="h-10 w-10 text-blue-500 animate-spin" />
         <p className="text-sm text-muted-foreground">결제를 처리하고 있습니다...</p>
       </div>
     );
@@ -109,7 +109,7 @@ export default function CheckoutSuccessPage() {
       </div>
 
       <Button
-        className="bg-orange-500 hover:bg-orange-600 px-8"
+        className="bg-blue-500 hover:bg-blue-600 px-8"
         onClick={handleGoNext}
       >
         {type === "course" ? "강좌 시작하기" : "커뮤니티 입장하기"}

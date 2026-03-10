@@ -49,7 +49,7 @@ export function DailyCheckinButton({ slug, initialCheckedIn }: Props) {
       className={`w-full text-xs h-8 ${
         checkedIn
           ? "bg-green-50 text-green-600 border border-green-200 hover:bg-green-50"
-          : "bg-orange-500 hover:bg-orange-600 text-white"
+          : "bg-blue-500 hover:bg-blue-600 text-white"
       }`}
       variant="ghost"
       onClick={handleCheckin}

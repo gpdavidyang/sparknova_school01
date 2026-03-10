@@ -30,7 +30,7 @@ export default function CheckoutFailPage() {
           다시 시도
         </Button>
         <Button
-          className="bg-orange-500 hover:bg-orange-600"
+          className="bg-blue-500 hover:bg-blue-600"
           onClick={() => router.push("/")}
         >
           홈으로

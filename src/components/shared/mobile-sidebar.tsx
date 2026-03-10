@@ -59,7 +59,7 @@ export function MobileSidebar({ isOpen, onClose, myCommunities = [] }: Props) {
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 pathname === href
-                  ? "bg-orange-50 text-orange-600"
+                  ? "bg-blue-50 text-blue-600"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
             >
@@ -86,13 +86,13 @@ export function MobileSidebar({ isOpen, onClose, myCommunities = [] }: Props) {
                   className={cn(
                     "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
                     pathname.startsWith(`/community/${c.slug}`)
-                      ? "bg-orange-50 text-orange-600"
+                      ? "bg-blue-50 text-blue-600"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   )}
                 >
                   <Avatar className="h-6 w-6 shrink-0">
                     <AvatarImage src={c.avatarUrl ?? ""} />
-                    <AvatarFallback className="text-xs bg-orange-100 text-orange-600">{c.name[0]}</AvatarFallback>
+                    <AvatarFallback className="text-xs bg-blue-100 text-blue-600">{c.name[0]}</AvatarFallback>
                   </Avatar>
                   <span className="truncate">{c.name}</span>
                 </Link>
@@ -104,7 +104,7 @@ export function MobileSidebar({ isOpen, onClose, myCommunities = [] }: Props) {
         <div className="mt-4">
           <Link
             href="/community/new"
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 transition-colors"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600 transition-colors"
           >
             <Plus className="h-4 w-4" />
             커뮤니티 만들기

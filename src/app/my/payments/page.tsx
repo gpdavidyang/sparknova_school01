@@ -56,10 +56,10 @@ export default async function MyPaymentsPage() {
               <div key={p.id} className="border rounded-xl p-4 bg-card flex items-center gap-4">
                 {/* 아이콘 */}
                 <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${
-                  type === "course" ? "bg-orange-50" : "bg-blue-50"
+                  type === "course" ? "bg-blue-50" : "bg-blue-50"
                 }`}>
                   {type === "course"
-                    ? <BookOpen className="h-5 w-5 text-orange-500" />
+                    ? <BookOpen className="h-5 w-5 text-blue-500" />
                     : <Users className="h-5 w-5 text-blue-500" />
                   }
                 </div>

@@ -21,7 +21,8 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 export default async function AdminPage({ params, searchParams }: Props) {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  const slug = decodeURIComponent(rawSlug);
   const { tab = "courses" } = await searchParams;
 
   const session = await auth();
@@ -44,8 +45,8 @@ export default async function AdminPage({ params, searchParams }: Props) {
     <div className="space-y-6">
       {/* 헤더 */}
       <div className="flex items-center gap-3">
-        <div className="h-9 w-9 rounded-full bg-orange-50 flex items-center justify-center">
-          <Settings className="h-4 w-4 text-orange-500" />
+        <div className="h-9 w-9 rounded-full bg-blue-50 flex items-center justify-center">
+          <Settings className="h-4 w-4 text-blue-500" />
         </div>
         <div>
           <h1 className="font-bold">커뮤니티 관리</h1>
@@ -61,7 +62,7 @@ export default async function AdminPage({ params, searchParams }: Props) {
             href={`/community/${slug}/admin?tab=${key}`}
             className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px ${
               tab === key
-                ? "border-orange-500 text-orange-600"
+                ? "border-blue-500 text-blue-600"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -135,7 +136,7 @@ async function CoursesTab({ slug, communityId }: { slug: string; communityId: st
               <td className="px-4 py-3 text-center text-muted-foreground">{course._count.modules}</td>
               <td className="px-4 py-3 text-center text-muted-foreground">{course._count.enrollments}</td>
               <td className="px-4 py-3 text-center">
-                <span className={`text-xs font-medium ${course.isFree ? "text-green-600" : "text-orange-600"}`}>
+                <span className={`text-xs font-medium ${course.isFree ? "text-green-600" : "text-blue-600"}`}>
                   {course.isFree ? "무료" : `${course.price?.toLocaleString()}원`}
                 </span>
               </td>
@@ -182,7 +183,7 @@ async function MembersTab({ slug, communityId }: { slug: string; communityId: st
             <tr key={m.id} className="border-b last:border-0 hover:bg-muted/20 transition-colors">
               <td className="px-4 py-3">
                 <div className="flex items-center gap-2">
-                  <div className="h-7 w-7 rounded-full bg-orange-100 flex items-center justify-center text-xs font-bold text-orange-600 shrink-0">
+                  <div className="h-7 w-7 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-600 shrink-0">
                     {m.user.avatarUrl ? (
                       <img src={m.user.avatarUrl} alt="" className="w-full h-full rounded-full object-cover" />
                     ) : (
@@ -197,7 +198,7 @@ async function MembersTab({ slug, communityId }: { slug: string; communityId: st
               </td>
               <td className="px-4 py-3 text-center">
                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                  m.role === "OWNER" ? "bg-orange-100 text-orange-700" :
+                  m.role === "OWNER" ? "bg-blue-100 text-blue-700" :
                   m.role === "ADMIN" ? "bg-purple-100 text-purple-700" :
                   m.role === "MODERATOR" ? "bg-blue-100 text-blue-700" :
                   "bg-muted text-muted-foreground"

@@ -5,7 +5,8 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
-  const { slug } = await params;
+  const { slug: _rawSlug } = await params;
+  const slug = decodeURIComponent(_rawSlug);
 
   const community = await db.community.findUnique({
     where: { slug },

@@ -24,7 +24,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
         {/* 데스크탑 사이드바 */}
         <Sidebar myCommunities={myCommunities} />
         {/* 메인 콘텐츠: 모바일은 전체 너비, 데스크탑은 사이드바 여백 */}
-        <main className="flex-1 pt-16 p-4 sm:p-6 lg:ml-64 min-w-0">
+        <main className="flex-1 pt-16 px-4 pb-4 sm:px-6 sm:pb-6 lg:ml-64 min-w-0">
           <div className="max-w-4xl mx-auto">
             {children}
           </div>

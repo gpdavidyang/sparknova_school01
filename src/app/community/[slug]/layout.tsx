@@ -11,7 +11,8 @@ interface Props {
 }
 
 export default async function CommunityLayout({ children, params }: Props) {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  const slug = decodeURIComponent(rawSlug);
   const session = await auth();
 
   const community = await db.community.findUnique({
@@ -68,7 +69,7 @@ export default async function CommunityLayout({ children, params }: Props) {
   return (
     <div className="min-h-screen bg-background">
       {/* 커뮤니티 커버 & 헤더 */}
-      <div className="h-48 bg-gradient-to-br from-orange-400 to-pink-500 relative">
+      <div className="h-48 bg-gradient-to-br from-blue-500 to-indigo-500 relative">
         {community.coverUrl && (
           <img src={community.coverUrl} alt="" className="w-full h-full object-cover" />
         )}
@@ -79,7 +80,7 @@ export default async function CommunityLayout({ children, params }: Props) {
               {community.avatarUrl ? (
                 <img src={community.avatarUrl} alt={community.name} className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full bg-orange-100 flex items-center justify-center text-2xl font-bold text-orange-600">
+                <div className="w-full h-full bg-blue-100 flex items-center justify-center text-2xl font-bold text-blue-600">
                   {community.name[0]}
                 </div>
               )}

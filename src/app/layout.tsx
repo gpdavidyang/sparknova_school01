@@ -1,13 +1,8 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthSessionProvider } from "@/components/shared/session-provider";
-
-const geist = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+import { ThemeProvider } from "@/components/shared/theme-provider";
 
 export const metadata: Metadata = {
   title: {
@@ -21,11 +16,13 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko" suppressHydrationWarning>
-      <body className={`${geist.variable} antialiased`}>
-        <AuthSessionProvider>
-          {children}
-          <Toaster richColors position="top-right" />
-        </AuthSessionProvider>
+      <body className="antialiased">
+        <ThemeProvider>
+          <AuthSessionProvider>
+            {children}
+            <Toaster richColors position="top-right" />
+          </AuthSessionProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

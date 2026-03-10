@@ -38,9 +38,10 @@ model User {
   memberships      CommunityMember[]
 
   // 피드
-  posts    Post[]
-  comments Comment[]
-  likes    Like[]
+  posts     Post[]
+  comments  Comment[]
+  likes     Like[]
+  bookmarks Bookmark[]
 
   // 강좌
   enrollments  Enrollment[]
@@ -240,8 +241,22 @@ model Post {
   category  CommunityCategory? @relation(fields: [categoryId], references: [id])
   comments  Comment[]
   likes     Like[]
+  bookmarks Bookmark[]
 
   @@map("posts")
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@map("bookmarks")
 }
 
 model Comment {

@@ -10,11 +10,11 @@ const TYPE_CONFIG: Record<string, { icon: React.ElementType; color: string; bg: 
   COMMENT_LIKED:    { icon: Heart,        color: "text-red-500",    bg: "bg-red-50" },
   NEW_MEMBER_JOINED:{ icon: Users,        color: "text-green-500",  bg: "bg-green-50" },
   LEVEL_UP:         { icon: Trophy,       color: "text-yellow-500", bg: "bg-yellow-50" },
-  BADGE_EARNED:     { icon: Star,         color: "text-orange-500", bg: "bg-orange-50" },
+  BADGE_EARNED:     { icon: Star,         color: "text-blue-500", bg: "bg-blue-50" },
   COURSE_PUBLISHED: { icon: Zap,          color: "text-purple-500", bg: "bg-purple-50" },
   PAYMENT_SUCCESS:  { icon: DollarSign,   color: "text-green-500",  bg: "bg-green-50" },
   PAYMENT_FAILED:   { icon: DollarSign,   color: "text-red-500",    bg: "bg-red-50" },
-  REFERRAL_SUCCESS: { icon: Users,        color: "text-orange-500", bg: "bg-orange-50" },
+  REFERRAL_SUCCESS: { icon: Users,        color: "text-blue-500", bg: "bg-blue-50" },
   EVENT_REMINDER:   { icon: Bell,         color: "text-blue-500",   bg: "bg-blue-50" },
   SYSTEM:           { icon: Bell,         color: "text-gray-500",   bg: "bg-gray-100" },
 };
@@ -52,8 +52,8 @@ export default async function NotificationsPage() {
   return (
     <div className="max-w-2xl mx-auto py-8 px-4 space-y-6">
       <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-full bg-orange-50 flex items-center justify-center">
-          <Bell className="h-5 w-5 text-orange-500" />
+        <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center">
+          <Bell className="h-5 w-5 text-blue-500" />
         </div>
         <div>
           <h1 className="text-xl font-bold">알림</h1>
@@ -77,7 +77,7 @@ export default async function NotificationsPage() {
               <div
                 key={n.id}
                 className={`border rounded-xl p-4 flex items-start gap-3 bg-card ${
-                  !n.isRead ? "border-orange-200 bg-orange-50/30" : ""
+                  !n.isRead ? "border-blue-200 bg-blue-50/30" : ""
                 }`}
               >
                 <div className={`h-9 w-9 rounded-full ${config.bg} flex items-center justify-center shrink-0`}>
@@ -89,7 +89,7 @@ export default async function NotificationsPage() {
                   <p className="text-xs text-muted-foreground mt-1">{timeAgo(n.createdAt)}</p>
                 </div>
                 {!n.isRead && (
-                  <div className="h-2 w-2 rounded-full bg-orange-500 shrink-0 mt-1.5" />
+                  <div className="h-2 w-2 rounded-full bg-blue-500 shrink-0 mt-1.5" />
                 )}
               </div>
             );

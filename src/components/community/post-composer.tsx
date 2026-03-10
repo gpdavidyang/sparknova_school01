@@ -58,7 +58,7 @@ export function PostComposer({ communityId, communitySlug }: Props) {
               </Button>
               <Button
                 size="sm"
-                className="bg-orange-500 hover:bg-orange-600"
+                className="bg-blue-500 hover:bg-blue-600"
                 onClick={handleSubmit}
                 disabled={!content.trim() || loading}
               >

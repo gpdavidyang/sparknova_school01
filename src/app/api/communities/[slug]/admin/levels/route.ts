@@ -16,7 +16,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ slug
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { slug } = await params;
+  const { slug: _rawSlug } = await params;
+  const slug = decodeURIComponent(_rawSlug);
   const community = await getOwnerCommunity(slug, session.user.id);
   if (!community) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 

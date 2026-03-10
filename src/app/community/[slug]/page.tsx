@@ -10,14 +10,24 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props) {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  const slug = decodeURIComponent(rawSlug);
   const community = await db.community.findUnique({ where: { slug } });
   if (!community) return {};
-  return { title: community.name };
+  return {
+    title: community.name,
+    description: community.description ?? `${community.name} 커뮤니티`,
+    openGraph: {
+      title: community.name,
+      description: community.description ?? `${community.name} 커뮤니티`,
+      ...(community.avatarUrl ? { images: [{ url: community.avatarUrl }] } : {}),
+    },
+  };
 }
 
 export default async function CommunityFeedPage({ params }: Props) {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  const slug = decodeURIComponent(rawSlug);
   const community = await db.community.findUnique({ where: { slug } });
   if (!community) notFound();
 

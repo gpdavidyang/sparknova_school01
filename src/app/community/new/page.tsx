@@ -87,8 +87,8 @@ export default function NewCommunityPage() {
                     onClick={() => setForm({ ...form, joinType: value })}
                     className={`p-3 rounded-lg border-2 text-left transition-colors ${
                       form.joinType === value
-                        ? "border-orange-500 bg-orange-50"
-                        : "border-border hover:border-orange-200"
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-border hover:border-blue-200"
                     }`}
                   >
                     <div className="font-medium text-sm">{label}</div>
@@ -100,7 +100,7 @@ export default function NewCommunityPage() {
 
             <Button
               type="submit"
-              className="w-full bg-orange-500 hover:bg-orange-600"
+              className="w-full bg-blue-500 hover:bg-blue-600"
               disabled={loading}
             >
               {loading ? "생성 중..." : "커뮤니티 만들기"}

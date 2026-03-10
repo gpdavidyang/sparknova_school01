@@ -3,12 +3,14 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 function toSlug(text: string) {
-  return text
+  const ascii = text
     .toLowerCase()
-    .replace(/[^a-z0-9가-힣\s-]/g, "")
+    .replace(/[^a-z0-9\s-]/g, "")
     .trim()
     .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
     .slice(0, 60);
+  return ascii || `community-${Date.now()}`;
 }
 
 export async function POST(req: NextRequest) {

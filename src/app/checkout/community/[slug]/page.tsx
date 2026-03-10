@@ -59,7 +59,7 @@ export default function CommunityCheckoutPage() {
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="h-8 w-8 rounded-full border-4 border-orange-500 border-t-transparent animate-spin" />
+        <div className="h-8 w-8 rounded-full border-4 border-blue-500 border-t-transparent animate-spin" />
       </div>
     );
   }
@@ -76,15 +76,15 @@ export default function CommunityCheckoutPage() {
     <div className="min-h-[60vh] flex items-center justify-center py-12 px-4">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-orange-50 border-2 border-orange-200 mx-auto">
-            <Users className="h-7 w-7 text-orange-500" />
+          <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-blue-50 border-2 border-blue-200 mx-auto">
+            <Users className="h-7 w-7 text-blue-500" />
           </div>
           <h1 className="text-xl font-bold">커뮤니티 멤버십</h1>
           <p className="text-sm text-muted-foreground">{community.name}</p>
         </div>
 
         {/* 플랜 카드 */}
-        <div className="border-2 border-orange-200 rounded-xl p-5 bg-orange-50/30 space-y-4">
+        <div className="border-2 border-blue-200 rounded-xl p-5 bg-blue-50/30 space-y-4">
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground uppercase tracking-wide">구독 플랜</p>
             <p className="font-semibold">{community.name} 멤버십 · 30일</p>
@@ -96,15 +96,15 @@ export default function CommunityCheckoutPage() {
           <ul className="space-y-1.5 text-sm text-muted-foreground">
             {["커뮤니티 피드 무제한 이용", "강좌 · 클래스룸 접근", "멤버 전용 이벤트 참가", "리더보드 및 게임화 기능"].map((f) => (
               <li key={f} className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-orange-400 shrink-0" />
+                <span className="h-1.5 w-1.5 rounded-full bg-blue-400 shrink-0" />
                 {f}
               </li>
             ))}
           </ul>
 
-          <div className="border-t border-orange-200 pt-4 flex items-center justify-between">
+          <div className="border-t border-blue-200 pt-4 flex items-center justify-between">
             <span className="text-sm text-muted-foreground">월 구독료</span>
-            <span className="text-xl font-bold text-orange-600">
+            <span className="text-xl font-bold text-blue-600">
               {community.price.toLocaleString()}원
             </span>
           </div>
@@ -116,7 +116,7 @@ export default function CommunityCheckoutPage() {
         </div>
 
         <Button
-          className="w-full bg-orange-500 hover:bg-orange-600 h-12 text-base"
+          className="w-full bg-blue-500 hover:bg-blue-600 h-12 text-base"
           onClick={handlePay}
           disabled={paying}
         >

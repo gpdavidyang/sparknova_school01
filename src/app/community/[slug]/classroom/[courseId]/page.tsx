@@ -2,27 +2,50 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { BookOpen, CheckCircle2, Circle, Play, FileText, Clock } from "lucide-react";
+import { BookOpen, CheckCircle2, Circle, Play, FileText, Clock, Pencil, Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { EnrollButton } from "@/components/classroom/enroll-button";
+
+function getYoutubeThumbnail(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const m = url.match(/(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/);
+  return m ? `https://img.youtube.com/vi/${m[1]}/mqdefault.jpg` : null;
+}
 
 interface Props {
   params: Promise<{ slug: string; courseId: string }>;
 }
 
+export async function generateMetadata({ params }: Props) {
+  const { courseId } = await params;
+  const course = await db.course.findUnique({
+    where: { id: courseId },
+    select: { title: true, description: true, thumbnailUrl: true },
+  });
+  if (!course) return {};
+  return {
+    title: course.title,
+    description: course.description ?? course.title,
+    openGraph: {
+      title: course.title,
+      description: course.description ?? course.title,
+      ...(course.thumbnailUrl ? { images: [{ url: course.thumbnailUrl }] } : {}),
+    },
+  };
+}
+
 export default async function CourseDetailPage({ params }: Props) {
-  const { slug, courseId } = await params;
+  const { slug: rawSlug, courseId } = await params;
+  const slug = decodeURIComponent(rawSlug);
   const session = await auth();
 
   const course = await db.course.findUnique({
     where: { id: courseId },
     include: {
       modules: {
-        where: { isPublished: true },
         orderBy: { order: "asc" },
         include: {
           lessons: {
-            where: { isPublished: true },
             orderBy: { order: "asc" },
           },
         },
@@ -31,7 +54,10 @@ export default async function CourseDetailPage({ params }: Props) {
     },
   });
 
-  if (!course || !course.isPublished) notFound();
+  // 오너는 미발행 강좌도 볼 수 있도록 잠시 community ownerId 확인
+  const communityForOwner = await db.community.findUnique({ where: { slug }, select: { ownerId: true } });
+  const isOwnerCheck = session?.user?.id === communityForOwner?.ownerId;
+  if (!course || (!course.isPublished && !isOwnerCheck)) notFound();
 
   const community = await db.community.findUnique({
     where: { slug },
@@ -71,8 +97,16 @@ export default async function CourseDetailPage({ params }: Props) {
               <p className="text-muted-foreground mt-2">{course.description}</p>
             )}
           </div>
+          {isOwner && (
+            <Link
+              href={`/community/${slug}/classroom/${courseId}/edit`}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium border rounded-lg hover:bg-muted transition-colors shrink-0"
+            >
+              <Pencil className="h-3.5 w-3.5" />수정
+            </Link>
+          )}
           {!course.isFree && course.price && (
-            <Badge className="bg-orange-500 text-white border-0 text-base px-3 py-1">
+            <Badge className="bg-blue-500 text-white border-0 text-base px-3 py-1">
               ₩{course.price.toLocaleString()}
             </Badge>
           )}
@@ -102,7 +136,7 @@ export default async function CourseDetailPage({ params }: Props) {
             </div>
             <div className="h-2 bg-muted rounded-full overflow-hidden">
               <div
-                className="h-full bg-orange-500 transition-all"
+                className="h-full bg-blue-500 transition-all"
                 style={{ width: `${totalLessons > 0 ? (completedCount / totalLessons) * 100 : 0}%` }}
               />
             </div>
@@ -111,7 +145,13 @@ export default async function CourseDetailPage({ params }: Props) {
 
         {/* 수강 신청 버튼 */}
         {!isOwner && (
-          <EnrollButton courseId={courseId} isFree={course.isFree} enrolled={!!enrollment} />
+          <EnrollButton
+            courseId={courseId}
+            isFree={course.isFree}
+            enrolled={!!enrollment}
+            isLoggedIn={!!session?.user?.id}
+            courseSlug={`/community/${slug}/classroom/${courseId}`}
+          />
         )}
       </div>
 
@@ -129,25 +169,76 @@ export default async function CourseDetailPage({ params }: Props) {
             <div className="divide-y">
               {mod.lessons.map((lesson, li) => {
                 const isCompleted = completedSet.has(lesson.id);
-                const canAccess = isOwner || !!enrollment || lesson.isFree;
+                // 강좌 자체가 무료면 모든 레슨 접근 가능 (수강 신청 없이도)
+                const canAccess = isOwner || !!enrollment || lesson.isFree || course.isFree;
+                const thumb = lesson.type === "VIDEO" ? getYoutubeThumbnail(lesson.videoUrl) : null;
+                const showThumb = canAccess && lesson.type === "VIDEO" && (thumb || lesson.videoUrl);
+                const lessonHref = `/community/${slug}/classroom/${courseId}/lessons/${lesson.id}`;
+
+                if (showThumb) {
+                  // 썸네일 카드 형태
+                  return (
+                    <div key={lesson.id} className="p-3">
+                      <Link href={lessonHref} className="group flex gap-3 rounded-lg overflow-hidden hover:bg-muted/40 transition-colors p-1 -m-1">
+                        {/* 썸네일 */}
+                        <div className="relative w-36 shrink-0 aspect-video rounded-lg overflow-hidden bg-muted">
+                          {thumb ? (
+                            <img src={thumb} alt={lesson.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-violet-100 to-blue-100 dark:from-violet-950/40 dark:to-blue-950/40 flex items-center justify-center">
+                              <Play className="h-6 w-6 text-violet-400 opacity-60" />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="h-8 w-8 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Play className="h-4 w-4 text-white fill-white" />
+                            </div>
+                          </div>
+                          {isCompleted && (
+                            <div className="absolute top-1 right-1">
+                              <CheckCircle2 className="h-4 w-4 text-green-400 drop-shadow" />
+                            </div>
+                          )}
+                        </div>
+                        {/* 텍스트 */}
+                        <div className="flex-1 min-w-0 py-0.5 space-y-1">
+                          <p className="text-sm font-medium line-clamp-2 leading-snug group-hover:text-blue-500 transition-colors">
+                            {mi + 1}.{li + 1} {lesson.title}
+                          </p>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {lesson.isFree && !enrollment && (
+                              <Badge variant="outline" className="text-xs px-1.5 py-0 text-violet-600 border-violet-300">미리보기</Badge>
+                            )}
+                            {lesson.duration && (
+                              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Clock className="h-3 w-3" />{Math.floor(lesson.duration / 60)}분
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </Link>
+                    </div>
+                  );
+                }
+
+                // 일반 텍스트 행
                 return (
                   <div key={lesson.id} className="flex items-center gap-3 px-4 py-3">
                     {isCompleted ? (
                       <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
-                    ) : (
+                    ) : canAccess ? (
                       <Circle className="h-4 w-4 text-muted-foreground shrink-0" />
+                    ) : (
+                      <Lock className="h-4 w-4 text-muted-foreground/50 shrink-0" />
                     )}
                     <div className="flex-1 min-w-0">
                       <span className="text-sm">
                         {canAccess ? (
-                          <Link
-                            href={`/community/${slug}/classroom/${courseId}/lessons/${lesson.id}`}
-                            className="hover:text-orange-500 transition-colors"
-                          >
+                          <Link href={lessonHref} className="hover:text-blue-500 transition-colors">
                             {mi + 1}.{li + 1} {lesson.title}
                           </Link>
                         ) : (
-                          <span className="text-muted-foreground">
+                          <span className="text-muted-foreground/60">
                             {mi + 1}.{li + 1} {lesson.title}
                           </span>
                         )}

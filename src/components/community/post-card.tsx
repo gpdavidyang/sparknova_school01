@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
-import { Heart, MessageCircle, Pin } from "lucide-react";
+import { Heart, MessageCircle, Pin, Bookmark } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +34,7 @@ interface PostCardProps {
 export function PostCard({ post, communitySlug }: PostCardProps) {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(post._count.likes);
+  const [bookmarked, setBookmarked] = useState(false);
 
   async function handleLike() {
     try {
@@ -46,8 +47,20 @@ export function PostCard({ post, communitySlug }: PostCardProps) {
     }
   }
 
+  async function handleBookmark() {
+    try {
+      const res = await fetch(`/api/posts/${post.id}/bookmark`, { method: "POST" });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setBookmarked(data.bookmarked);
+      toast.success(data.bookmarked ? "북마크에 저장했습니다." : "북마크를 해제했습니다.");
+    } catch {
+      toast.error("로그인이 필요합니다.");
+    }
+  }
+
   return (
-    <Card className={cn(post.isPinned && "border-orange-200 bg-orange-50/30")}>
+    <Card className={cn(post.isPinned && "border-blue-200 bg-blue-50/30")}>
       <CardContent className="p-4">
         {/* 헤더 */}
         <div className="flex items-start gap-3">
@@ -65,7 +78,7 @@ export function PostCard({ post, communitySlug }: PostCardProps) {
                 </Badge>
               )}
               {post.isPinned && (
-                <span className="flex items-center gap-1 text-xs text-orange-500">
+                <span className="flex items-center gap-1 text-xs text-blue-500">
                   <Pin className="h-3 w-3" />
                   고정
                 </span>
@@ -101,6 +114,15 @@ export function PostCard({ post, communitySlug }: PostCardProps) {
                 <MessageCircle className="h-3.5 w-3.5" />
                 {post._count.comments}
               </Link>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                className={cn("h-8 px-2 ml-auto", bookmarked && "text-blue-500")}
+                onClick={handleBookmark}
+              >
+                <Bookmark className={cn("h-3.5 w-3.5", bookmarked && "fill-blue-500")} />
+              </Button>
             </div>
           </div>
         </div>

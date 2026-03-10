@@ -8,14 +8,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
     return NextResponse.json({ error: "로그인이 필요합니다." }, { status: 401 });
   }
 
-  const { slug } = await params;
+  const { slug: _rawSlug } = await params;
+  const slug = decodeURIComponent(_rawSlug);
   const community = await db.community.findUnique({ where: { slug } });
   if (!community) return NextResponse.json({ error: "커뮤니티를 찾을 수 없습니다." }, { status: 404 });
   if (community.ownerId !== session.user.id) {
     return NextResponse.json({ error: "권한이 없습니다." }, { status: 403 });
   }
 
-  const { title, description, isFree, price, modules } = await req.json();
+  const { title, description, thumbnailUrl, isFree, price, modules } = await req.json();
   if (!title?.trim()) return NextResponse.json({ error: "강좌 제목을 입력해주세요." }, { status: 400 });
 
   const lastCourse = await db.course.findFirst({
@@ -29,12 +30,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
       communityId: community.id,
       title: title.trim(),
       description: description?.trim() || null,
+      thumbnailUrl: thumbnailUrl || null,
       isFree: isFree ?? true,
       price: isFree ? null : price,
       order: (lastCourse?.order ?? 0) + 1,
       isPublished: true,
       modules: {
-        create: (modules ?? []).map((mod: { title: string; lessons: { title: string; type: string; content?: string; videoUrl?: string }[] }, mi: number) => ({
+        create: (modules ?? []).map((mod: { title: string; lessons: { title: string; type: string; content?: string; videoUrl?: string; isFree?: boolean }[] }, mi: number) => ({
           title: mod.title,
           order: mi,
           isPublished: true,
@@ -46,6 +48,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
               videoUrl: lesson.videoUrl || null,
               order: li,
               isPublished: true,
+              isFree: lesson.isFree ?? false,
             })),
           },
         })),

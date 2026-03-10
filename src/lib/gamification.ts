@@ -1,18 +1,7 @@
 import { PointType } from "@prisma/client";
 import { db } from "@/lib/db";
-
-// 기본 레벨 설정 (관리자가 커스터마이징 가능)
-export const DEFAULT_LEVELS = [
-  { level: 1, name: "새싹",    minPoints: 0 },
-  { level: 2, name: "씨앗",    minPoints: 50 },
-  { level: 3, name: "나무",    minPoints: 150 },
-  { level: 4, name: "빛",      minPoints: 300 },
-  { level: 5, name: "별",      minPoints: 500 },
-  { level: 6, name: "혜성",    minPoints: 800 },
-  { level: 7, name: "행성",    minPoints: 1200 },
-  { level: 8, name: "항성",    minPoints: 2000 },
-  { level: 9, name: "슈퍼노바", minPoints: 3500 },
-];
+import { DEFAULT_LEVELS, calculateLevel } from "@/lib/gamification-constants";
+export { DEFAULT_LEVELS, calculateLevel };
 
 // 포인트 획득 규칙
 export const POINT_RULES: Record<PointType, number> = {
@@ -82,18 +71,6 @@ export async function grantPoints({
   }
 
   return { points, newLevel, leveledUp };
-}
-
-/**
- * 포인트 합계로 레벨 계산
- */
-export function calculateLevel(points: number): number {
-  for (let i = DEFAULT_LEVELS.length - 1; i >= 0; i--) {
-    if (points >= DEFAULT_LEVELS[i].minPoints) {
-      return DEFAULT_LEVELS[i].level;
-    }
-  }
-  return 1;
 }
 
 /**

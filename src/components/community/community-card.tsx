@@ -26,7 +26,7 @@ export function CommunityCard({ community }: { community: CommunityCardData }) {
   return (
     <Link href={`/community/${community.slug}`}>
       <Card className="hover:shadow-md transition-shadow overflow-hidden cursor-pointer">
-        <div className="h-24 bg-gradient-to-br from-orange-400 to-pink-500 relative">
+        <div className="h-24 bg-gradient-to-br from-blue-500 to-indigo-500 relative">
           {community.coverUrl && (
             <img src={community.coverUrl} alt="" className="w-full h-full object-cover" />
           )}
@@ -42,7 +42,7 @@ export function CommunityCard({ community }: { community: CommunityCardData }) {
           <div className="flex items-start gap-3">
             <Avatar className="h-10 w-10 -mt-7 border-2 border-background shrink-0">
               <AvatarImage src={community.avatarUrl ?? ""} />
-              <AvatarFallback className="bg-orange-100 text-orange-600 font-bold">
+              <AvatarFallback className="bg-blue-100 text-blue-600 font-bold">
                 {community.name[0]}
               </AvatarFallback>
             </Avatar>
@@ -67,7 +67,7 @@ export function CommunityCard({ community }: { community: CommunityCardData }) {
               {community.memberCount.toLocaleString()}명
             </span>
             {isPaid && community.price && (
-              <span className="text-xs font-semibold text-orange-600">
+              <span className="text-xs font-semibold text-blue-600">
                 ₩{community.price.toLocaleString()}/월
               </span>
             )}

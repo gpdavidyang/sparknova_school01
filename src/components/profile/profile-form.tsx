@@ -81,7 +81,7 @@ export function ProfileForm({ initial }: Props) {
         <input
           value={form.name}
           onChange={(e) => set("name", e.target.value)}
-          className="w-full border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-orange-400"
+          className="w-full border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-blue-400"
           placeholder="표시 이름"
         />
       </div>
@@ -93,7 +93,7 @@ export function ProfileForm({ initial }: Props) {
           value={form.bio}
           onChange={(e) => set("bio", e.target.value)}
           rows={2}
-          className="w-full border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-orange-400 resize-none"
+          className="w-full border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-blue-400 resize-none"
           placeholder="나를 소개해보세요..."
           maxLength={200}
         />
@@ -106,7 +106,7 @@ export function ProfileForm({ initial }: Props) {
         <button
           onClick={save}
           disabled={saving}
-          className="px-4 py-2 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-lg transition-colors disabled:opacity-50"
+          className="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors disabled:opacity-50"
         >
           {saving ? "저장 중..." : "저장하기"}
         </button>

@@ -56,7 +56,7 @@ export default function ReferralPage() {
   if (loading) {
     return (
       <div className="max-w-2xl mx-auto py-12 px-4 flex items-center justify-center">
-        <div className="h-8 w-8 rounded-full border-4 border-orange-500 border-t-transparent animate-spin" />
+        <div className="h-8 w-8 rounded-full border-4 border-blue-500 border-t-transparent animate-spin" />
       </div>
     );
   }
@@ -79,23 +79,23 @@ export default function ReferralPage() {
     <div className="max-w-2xl mx-auto py-8 px-4 space-y-8">
       {/* 헤더 */}
       <div className="text-center space-y-2">
-        <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-orange-50 border-2 border-orange-200 mx-auto">
-          <Gift className="h-8 w-8 text-orange-500" />
+        <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-blue-50 border-2 border-blue-200 mx-auto">
+          <Gift className="h-8 w-8 text-blue-500" />
         </div>
         <h1 className="text-2xl font-bold">추천인 센터</h1>
         <p className="text-sm text-muted-foreground">
           친구를 초대하고 함께 성장하세요.<br />
-          추천 성공 시 <span className="text-orange-600 font-semibold">+50 포인트</span> 지급!
+          추천 성공 시 <span className="text-blue-600 font-semibold">+50 포인트</span> 지급!
         </p>
       </div>
 
       {/* 추천 코드 카드 */}
-      <div className="border-2 border-orange-200 rounded-2xl p-6 bg-gradient-to-br from-orange-50 to-pink-50 space-y-4">
+      <div className="border-2 border-blue-200 rounded-2xl p-6 bg-gradient-to-br from-blue-50 to-pink-50 space-y-4">
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest text-center">
           나의 추천 코드
         </p>
         <div className="flex items-center justify-center gap-3">
-          <span className="text-3xl font-bold tracking-widest text-orange-600 font-mono">
+          <span className="text-3xl font-bold tracking-widest text-blue-600 font-mono">
             {data.code}
           </span>
           <Button
@@ -123,7 +123,7 @@ export default function ReferralPage() {
 
         {/* 공유 버튼 */}
         <Button
-          className="w-full bg-orange-500 hover:bg-orange-600"
+          className="w-full bg-blue-500 hover:bg-blue-600"
           onClick={share}
         >
           <Share2 className="h-4 w-4 mr-2" />
@@ -155,7 +155,7 @@ export default function ReferralPage() {
             "전환 성공 시 나와 친구 모두 +50 포인트가 자동 지급됩니다.",
           ].map((step, i) => (
             <li key={i} className="flex items-start gap-3 text-sm text-muted-foreground">
-              <span className="h-5 w-5 rounded-full bg-orange-100 text-orange-600 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+              <span className="h-5 w-5 rounded-full bg-blue-100 text-blue-600 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
                 {i + 1}
               </span>
               {step}

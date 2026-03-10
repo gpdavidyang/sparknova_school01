@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { DEFAULT_LEVELS } from "@/lib/gamification";
+import { DEFAULT_LEVELS } from "@/lib/gamification-constants";
 
 interface LevelEntry {
   level: number;
@@ -62,7 +62,7 @@ export function LevelConfigForm({ slug, initialLevels }: Props) {
                   <input
                     value={l.name}
                     onChange={(e) => update(i, "name", e.target.value)}
-                    className="w-full border rounded px-2 py-1 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-orange-400"
+                    className="w-full border rounded px-2 py-1 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-blue-400"
                   />
                 </td>
                 <td className="px-4 py-2">
@@ -70,7 +70,7 @@ export function LevelConfigForm({ slug, initialLevels }: Props) {
                     type="number"
                     value={l.minPoints}
                     onChange={(e) => update(i, "minPoints", Number(e.target.value))}
-                    className="w-full border rounded px-2 py-1 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-orange-400"
+                    className="w-full border rounded px-2 py-1 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-blue-400"
                     min={0}
                   />
                 </td>
@@ -83,7 +83,7 @@ export function LevelConfigForm({ slug, initialLevels }: Props) {
         <button
           onClick={save}
           disabled={saving}
-          className="px-4 py-2 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-md transition-colors disabled:opacity-50"
+          className="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-md transition-colors disabled:opacity-50"
         >
           {saving ? "저장 중..." : "저장"}
         </button>

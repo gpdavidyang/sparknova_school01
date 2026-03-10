@@ -13,7 +13,8 @@ interface Props {
 }
 
 export default async function PostDetailPage({ params }: Props) {
-  const { slug, id } = await params;
+  const { slug: rawSlug, id } = await params;
+  const slug = decodeURIComponent(rawSlug);
   const session = await auth();
 
   const post = await db.post.findUnique({

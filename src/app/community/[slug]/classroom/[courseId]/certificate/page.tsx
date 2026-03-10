@@ -9,7 +9,8 @@ interface Props {
 }
 
 export default async function CertificatePage({ params }: Props) {
-  const { slug, courseId } = await params;
+  const { slug: rawSlug, courseId } = await params;
+  const slug = decodeURIComponent(rawSlug);
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
@@ -35,13 +36,13 @@ export default async function CertificatePage({ params }: Props) {
         </div>
 
         {/* 수료증 카드 */}
-        <div className="border-4 border-orange-200 rounded-2xl p-8 bg-gradient-to-br from-orange-50 to-pink-50 space-y-4">
+        <div className="border-4 border-blue-200 rounded-2xl p-8 bg-gradient-to-br from-blue-50 to-pink-50 space-y-4">
           <div className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Certificate of Completion</div>
           <div className="text-xs text-muted-foreground">수료 증명서</div>
 
           <div className="space-y-2">
             <p className="text-muted-foreground text-sm">이 수료증은 다음 분이</p>
-            <p className="text-2xl font-bold text-orange-600">{certificate.user.name ?? "수강생"}</p>
+            <p className="text-2xl font-bold text-blue-600">{certificate.user.name ?? "수강생"}</p>
             <p className="text-muted-foreground text-sm">아래 강좌를 성공적으로 완료했음을 증명합니다.</p>
           </div>
 
@@ -66,7 +67,7 @@ export default async function CertificatePage({ params }: Props) {
           </Link>
           <Link
             href={`/community/${slug}/classroom/${courseId}`}
-            className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 transition-colors"
+            className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 transition-colors"
           >
             강좌 다시 보기
           </Link>

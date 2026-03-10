@@ -40,7 +40,8 @@ export async function POST(req: NextRequest) {
     const url = await uploadFile({ bucket, path, file: buffer, contentType: file.type });
     return NextResponse.json({ url });
   } catch (e) {
-    console.error("[Upload] 실패:", e);
-    return NextResponse.json({ error: "업로드에 실패했습니다." }, { status: 500 });
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error("[Upload] 실패:", msg);
+    return NextResponse.json({ error: `업로드 실패: ${msg}` }, { status: 500 });
   }
 }

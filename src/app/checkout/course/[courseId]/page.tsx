@@ -60,7 +60,7 @@ export default function CourseCheckoutPage() {
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="h-8 w-8 rounded-full border-4 border-orange-500 border-t-transparent animate-spin" />
+        <div className="h-8 w-8 rounded-full border-4 border-blue-500 border-t-transparent animate-spin" />
       </div>
     );
   }
@@ -77,8 +77,8 @@ export default function CourseCheckoutPage() {
     <div className="min-h-[60vh] flex items-center justify-center py-12 px-4">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-orange-50 border-2 border-orange-200 mx-auto">
-            <BookOpen className="h-7 w-7 text-orange-500" />
+          <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-blue-50 border-2 border-blue-200 mx-auto">
+            <BookOpen className="h-7 w-7 text-blue-500" />
           </div>
           <h1 className="text-xl font-bold">강좌 결제</h1>
           <p className="text-sm text-muted-foreground">{course.communityName}</p>
@@ -93,7 +93,7 @@ export default function CourseCheckoutPage() {
 
           <div className="border-t pt-4 flex items-center justify-between">
             <span className="text-sm text-muted-foreground">결제 금액</span>
-            <span className="text-xl font-bold text-orange-600">
+            <span className="text-xl font-bold text-blue-600">
               {course.price.toLocaleString()}원
             </span>
           </div>
@@ -107,7 +107,7 @@ export default function CourseCheckoutPage() {
 
         {/* 결제 버튼 */}
         <Button
-          className="w-full bg-orange-500 hover:bg-orange-600 h-12 text-base"
+          className="w-full bg-blue-500 hover:bg-blue-600 h-12 text-base"
           onClick={handlePay}
           disabled={paying}
         >

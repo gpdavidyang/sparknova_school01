@@ -145,7 +145,7 @@ export function CommentSection({ postId, initialCount }: Props) {
                       value={replyText}
                       onChange={(e) => setReplyText(e.target.value)}
                       placeholder={`@${replyTo.name} 에게 답글...`}
-                      className="flex-1 text-sm border rounded-xl px-3 py-2 bg-background focus:outline-none focus:ring-1 focus:ring-orange-400"
+                      className="flex-1 text-sm border rounded-xl px-3 py-2 bg-background focus:outline-none focus:ring-1 focus:ring-blue-400"
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && !e.shiftKey) {
                           e.preventDefault();
@@ -157,7 +157,7 @@ export function CommentSection({ postId, initialCount }: Props) {
                     <button
                       onClick={() => submit(replyText, c.id)}
                       disabled={submitting || !replyText.trim()}
-                      className="px-3 py-2 text-xs font-medium bg-orange-500 text-white rounded-xl hover:bg-orange-600 disabled:opacity-40 transition-colors"
+                      className="px-3 py-2 text-xs font-medium bg-blue-500 text-white rounded-xl hover:bg-blue-600 disabled:opacity-40 transition-colors"
                     >
                       {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "전송"}
                     </button>
@@ -182,7 +182,7 @@ export function CommentSection({ postId, initialCount }: Props) {
               onChange={(e) => setText(e.target.value)}
               placeholder="댓글을 입력하세요..."
               rows={1}
-              className="flex-1 text-sm border rounded-xl px-3 py-2 bg-background focus:outline-none focus:ring-1 focus:ring-orange-400 resize-none"
+              className="flex-1 text-sm border rounded-xl px-3 py-2 bg-background focus:outline-none focus:ring-1 focus:ring-blue-400 resize-none"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
@@ -193,7 +193,7 @@ export function CommentSection({ postId, initialCount }: Props) {
             <button
               onClick={() => submit(text)}
               disabled={submitting || !text.trim()}
-              className="px-3 py-2 text-xs font-medium bg-orange-500 text-white rounded-xl hover:bg-orange-600 disabled:opacity-40 transition-colors shrink-0"
+              className="px-3 py-2 text-xs font-medium bg-blue-500 text-white rounded-xl hover:bg-blue-600 disabled:opacity-40 transition-colors shrink-0"
             >
               {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "등록"}
             </button>
@@ -201,7 +201,7 @@ export function CommentSection({ postId, initialCount }: Props) {
         </div>
       ) : (
         <p className="text-sm text-muted-foreground text-center py-2">
-          댓글을 작성하려면 <a href="/login" className="text-orange-500 hover:underline">로그인</a>이 필요합니다.
+          댓글을 작성하려면 <a href="/login" className="text-blue-500 hover:underline">로그인</a>이 필요합니다.
         </p>
       )}
     </div>

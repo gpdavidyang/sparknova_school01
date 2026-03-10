@@ -50,7 +50,7 @@ export function JoinButton({ slug, initialJoined, isOwner, isPaid = false }: Pro
     <Button
       size="sm"
       variant={joined ? "outline" : "default"}
-      className={joined ? "" : "bg-orange-500 hover:bg-orange-600"}
+      className={joined ? "" : "bg-blue-500 hover:bg-blue-600"}
       onClick={handleClick}
       disabled={loading}
     >

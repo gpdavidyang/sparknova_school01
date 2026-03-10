@@ -54,7 +54,12 @@ export default function LoginPage() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">비밀번호</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">비밀번호</Label>
+              <Link href="/forgot-password" className="text-xs text-blue-500 hover:text-blue-600 transition-colors">
+                비밀번호 찾기
+              </Link>
+            </div>
             <Input
               id="password"
               type="password"
@@ -66,7 +71,7 @@ export default function LoginPage() {
           </div>
           <Button
             type="submit"
-            className="w-full bg-orange-500 hover:bg-orange-600"
+            className="w-full bg-blue-500 hover:bg-blue-600"
             disabled={loading}
           >
             {loading ? "로그인 중..." : "로그인"}
@@ -75,7 +80,7 @@ export default function LoginPage() {
 
         <p className="text-center text-sm text-muted-foreground mt-6">
           계정이 없으신가요?{" "}
-          <Link href="/signup" className="text-orange-500 hover:underline font-medium">
+          <Link href="/signup" className="text-blue-500 hover:underline font-medium">
             회원가입
           </Link>
         </p>

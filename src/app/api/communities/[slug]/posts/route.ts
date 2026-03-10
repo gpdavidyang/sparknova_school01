@@ -15,7 +15,8 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
-  const { slug } = await params;
+  const { slug: _rawSlug } = await params;
+  const slug = decodeURIComponent(_rawSlug);
   const { searchParams } = new URL(req.url);
   const cursor = searchParams.get("cursor");
   const limit = 20;
@@ -52,7 +53,8 @@ export async function POST(
     return NextResponse.json({ error: "로그인이 필요합니다." }, { status: 401 });
   }
 
-  const { slug } = await params;
+  const { slug: _rawSlug } = await params;
+  const slug = decodeURIComponent(_rawSlug);
   const body = await req.json();
   const parsed = postSchema.safeParse(body);
   if (!parsed.success) {

@@ -45,7 +45,7 @@ async function CourseList({ slug }: { slug: string }) {
         <div className="flex justify-end">
           <Link
             href={`/community/${slug}/classroom/new`}
-            className="inline-flex items-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600 transition-colors"
           >
             <Plus className="h-4 w-4" />
             강좌 만들기
@@ -69,7 +69,7 @@ async function CourseList({ slug }: { slug: string }) {
             return (
               <Link key={course.id} href={`/community/${slug}/classroom/${course.id}`}>
                 <div className="border rounded-xl overflow-hidden hover:shadow-md transition-shadow bg-card">
-                  <div className="h-36 bg-gradient-to-br from-orange-100 to-pink-100 relative">
+                  <div className="h-36 bg-gradient-to-br from-blue-100 to-pink-100 relative">
                     {course.thumbnailUrl && (
                       <img src={course.thumbnailUrl} alt={course.title} className="w-full h-full object-cover" />
                     )}
@@ -83,7 +83,7 @@ async function CourseList({ slug }: { slug: string }) {
                     )}
                     {enrollment && (
                       <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-black/20">
-                        <div className="h-full bg-orange-500 transition-all" style={{ width: `${enrollment.progress}%` }} />
+                        <div className="h-full bg-blue-500 transition-all" style={{ width: `${enrollment.progress}%` }} />
                       </div>
                     )}
                   </div>
@@ -100,11 +100,11 @@ async function CourseList({ slug }: { slug: string }) {
                         <Users className="h-3 w-3" />{course._count.enrollments.toLocaleString()}명
                       </span>
                       {enrollment ? (
-                        <span className={cn("text-xs font-medium", enrollment.progress === 100 ? "text-green-500" : "text-orange-500")}>
+                        <span className={cn("text-xs font-medium", enrollment.progress === 100 ? "text-green-500" : "text-blue-500")}>
                           {enrollment.progress === 100 ? "✓ 수료" : `${Math.round(enrollment.progress)}% 수강 중`}
                         </span>
                       ) : course.price ? (
-                        <span className="text-xs font-semibold text-orange-600">₩{course.price.toLocaleString()}</span>
+                        <span className="text-xs font-semibold text-blue-600">₩{course.price.toLocaleString()}</span>
                       ) : (
                         <span className="text-xs font-medium text-green-600">무료</span>
                       )}
@@ -121,7 +121,8 @@ async function CourseList({ slug }: { slug: string }) {
 }
 
 export default async function ClassroomPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  const slug = decodeURIComponent(rawSlug);
   return (
     <div className="space-y-6">
       <div>

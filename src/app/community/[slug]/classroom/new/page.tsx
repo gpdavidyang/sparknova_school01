@@ -133,7 +133,7 @@ export default function NewCoursePage() {
               <div className="grid grid-cols-2 gap-3">
                 {[{ v: true, l: "무료", d: "누구나 무료 수강" }, { v: false, l: "유료", d: "결제 후 수강" }].map(({ v, l, d }) => (
                   <button key={l} type="button" onClick={() => setIsFree(v)}
-                    className={`p-3 rounded-lg border-2 text-left transition-colors ${isFree === v ? "border-orange-500 bg-orange-50" : "border-border hover:border-orange-200"}`}>
+                    className={`p-3 rounded-lg border-2 text-left transition-colors ${isFree === v ? "border-blue-500 bg-blue-50" : "border-border hover:border-blue-200"}`}>
                     <div className="font-medium text-sm">{l}</div>
                     <div className="text-xs text-muted-foreground">{d}</div>
                   </button>
@@ -191,7 +191,7 @@ export default function NewCoursePage() {
                           <div className="flex gap-2">
                             {(["TEXT", "VIDEO"] as const).map((t) => (
                               <button key={t} type="button" onClick={() => updateLesson(mi, li, "type", t)}
-                                className={`px-3 py-1 rounded text-xs font-medium transition-colors ${lesson.type === t ? "bg-orange-500 text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
+                                className={`px-3 py-1 rounded text-xs font-medium transition-colors ${lesson.type === t ? "bg-blue-500 text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
                                 {t === "TEXT" ? "텍스트" : "영상"}
                               </button>
                             ))}
@@ -217,7 +217,7 @@ export default function NewCoursePage() {
           </CardContent>
         </Card>
 
-        <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600" disabled={loading}>
+        <Button type="submit" className="w-full bg-blue-500 hover:bg-blue-600" disabled={loading}>
           {loading ? "생성 중..." : "강좌 만들기"}
         </Button>
       </form>

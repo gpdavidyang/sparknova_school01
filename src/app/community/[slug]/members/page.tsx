@@ -8,14 +8,15 @@ interface Props {
 }
 
 const ROLE_CONFIG = {
-  OWNER:     { label: "운영자", icon: Crown,  color: "text-orange-500" },
+  OWNER:     { label: "운영자", icon: Crown,  color: "text-blue-500" },
   ADMIN:     { label: "관리자", icon: Shield, color: "text-blue-500" },
   MODERATOR: { label: "모더레이터", icon: Shield, color: "text-purple-500" },
   MEMBER:    { label: null,     icon: null,   color: "" },
 };
 
 export default async function MembersPage({ params }: Props) {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  const slug = decodeURIComponent(rawSlug);
   const session = await auth();
 
   const community = await db.community.findUnique({
@@ -73,14 +74,14 @@ export default async function MembersPage({ params }: Props) {
           return (
             <div
               key={user.id}
-              className={`flex items-center gap-3 border rounded-xl p-3 bg-card ${isMe ? "border-orange-200 bg-orange-50/40" : ""}`}
+              className={`flex items-center gap-3 border rounded-xl p-3 bg-card ${isMe ? "border-blue-200 bg-blue-50/40" : ""}`}
             >
               {/* 아바타 */}
-              <div className="h-10 w-10 rounded-full bg-orange-100 overflow-hidden shrink-0">
+              <div className="h-10 w-10 rounded-full bg-blue-100 overflow-hidden shrink-0">
                 {user.avatarUrl ? (
                   <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-base font-bold text-orange-600">
+                  <div className="w-full h-full flex items-center justify-center text-base font-bold text-blue-600">
                     {user.name?.[0] ?? "?"}
                   </div>
                 )}
@@ -90,7 +91,7 @@ export default async function MembersPage({ params }: Props) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
                   <p className="text-sm font-medium truncate">{user.name ?? "익명"}</p>
-                  {isMe && <span className="text-xs text-orange-500">(나)</span>}
+                  {isMe && <span className="text-xs text-blue-500">(나)</span>}
                   {RoleIcon && (
                     <RoleIcon className={`h-3.5 w-3.5 shrink-0 ${roleConf.color}`} />
                   )}

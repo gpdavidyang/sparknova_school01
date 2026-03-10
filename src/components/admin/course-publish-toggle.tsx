@@ -31,7 +31,7 @@ export function CoursePublishToggle({ slug, courseId, initialPublished }: Props)
       onClick={toggle}
       disabled={loading}
       className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
-        isPublished ? "bg-orange-500" : "bg-gray-200"
+        isPublished ? "bg-blue-500" : "bg-gray-200"
       } ${loading ? "opacity-50" : ""}`}
     >
       <span

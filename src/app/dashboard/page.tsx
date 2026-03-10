@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
   LayoutDashboard, Users, BookOpen, TrendingUp,
-  Plus, ArrowRight, DollarSign, Star,
+  Plus, ArrowRight, DollarSign, Star, BarChart2,
 } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -84,6 +84,36 @@ export default async function DashboardPage() {
 
   const totalRevenue = communityRevenue + (courseRevenue._sum.amount ?? 0);
 
+  // 최근 6개월 월별 수익 집계
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+  sixMonthsAgo.setDate(1);
+  sixMonthsAgo.setHours(0, 0, 0, 0);
+
+  const recentPayments = await db.payment.findMany({
+    where: {
+      status: "PAID",
+      paidAt: { gte: sixMonthsAgo },
+    },
+    select: { amount: true, paidAt: true },
+  });
+
+  // 월별 집계 (최근 6개월)
+  const monthlyMap = new Map<string, number>();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date();
+    d.setMonth(d.getMonth() - i);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    monthlyMap.set(key, 0);
+  }
+  for (const p of recentPayments) {
+    if (!p.paidAt) continue;
+    const key = `${p.paidAt.getFullYear()}-${String(p.paidAt.getMonth() + 1).padStart(2, "0")}`;
+    if (monthlyMap.has(key)) monthlyMap.set(key, (monthlyMap.get(key) ?? 0) + p.amount);
+  }
+  const monthlyRevenue = Array.from(monthlyMap.entries()).map(([month, amount]) => ({ month, amount }));
+  const maxMonthlyAmount = Math.max(...monthlyRevenue.map((m) => m.amount), 1);
+
   // 전체 요약 통계
   const totalMembers = communities.reduce(
     (sum, c) => sum + (memberMap.get(c.id) ?? c.memberCount),
@@ -96,7 +126,7 @@ export default async function DashboardPage() {
     { label: "총 멤버", value: totalMembers.toLocaleString(), icon: Users, color: "text-blue-500", bg: "bg-blue-50" },
     { label: "강좌", value: totalCourses.toLocaleString(), icon: BookOpen, color: "text-purple-500", bg: "bg-purple-50" },
     { label: "수강 등록", value: totalEnrollments.toLocaleString(), icon: TrendingUp, color: "text-green-500", bg: "bg-green-50" },
-    { label: "총 수익", value: `${totalRevenue.toLocaleString()}원`, icon: DollarSign, color: "text-orange-500", bg: "bg-orange-50" },
+    { label: "총 수익", value: `${totalRevenue.toLocaleString()}원`, icon: DollarSign, color: "text-blue-500", bg: "bg-blue-50" },
   ];
 
   return (
@@ -104,8 +134,8 @@ export default async function DashboardPage() {
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-orange-50 flex items-center justify-center">
-            <LayoutDashboard className="h-5 w-5 text-orange-500" />
+          <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center">
+            <LayoutDashboard className="h-5 w-5 text-blue-500" />
           </div>
           <div>
             <h1 className="text-xl font-bold">크리에이터 대시보드</h1>
@@ -114,7 +144,7 @@ export default async function DashboardPage() {
         </div>
         <Link
           href="/community/new"
-          className="inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 transition-colors"
+          className="inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 transition-colors"
         >
           <Plus className="h-4 w-4 mr-1" />
           커뮤니티 만들기
@@ -145,7 +175,7 @@ export default async function DashboardPage() {
             <p>아직 운영 중인 커뮤니티가 없습니다.</p>
             <Link
               href="/community/new"
-              className="inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 transition-colors mt-4"
+              className="inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 transition-colors mt-4"
             >
               첫 커뮤니티 만들기
             </Link>
@@ -156,7 +186,7 @@ export default async function DashboardPage() {
               const members = memberMap.get(c.id) ?? c.memberCount;
               return (
                 <div key={c.id} className="border rounded-xl p-4 bg-card flex items-center gap-4">
-                  <div className="h-11 w-11 rounded-xl bg-orange-100 overflow-hidden shrink-0 flex items-center justify-center text-lg font-bold text-orange-600">
+                  <div className="h-11 w-11 rounded-xl bg-blue-100 overflow-hidden shrink-0 flex items-center justify-center text-lg font-bold text-blue-600">
                     {c.avatarUrl ? (
                       <img src={c.avatarUrl} alt="" className="w-full h-full object-cover" />
                     ) : (
@@ -172,7 +202,7 @@ export default async function DashboardPage() {
                       <span className="flex items-center gap-1">
                         <BookOpen className="h-3 w-3" />{c._count.courses}개 강좌
                       </span>
-                      <span className={`font-medium ${c.joinType === "PAID" ? "text-orange-500" : "text-green-500"}`}>
+                      <span className={`font-medium ${c.joinType === "PAID" ? "text-blue-500" : "text-green-500"}`}>
                         {c.joinType === "PAID" ? `유료 ${c.price?.toLocaleString()}원` : "무료"}
                       </span>
                     </div>
@@ -214,7 +244,7 @@ export default async function DashboardPage() {
                     <tr key={course.id} className="border-b last:border-0 hover:bg-muted/20 transition-colors">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <div className={`h-2 w-2 rounded-full shrink-0 ${course.isFree ? "bg-green-400" : "bg-orange-400"}`} />
+                          <div className={`h-2 w-2 rounded-full shrink-0 ${course.isFree ? "bg-green-400" : "bg-blue-400"}`} />
                           <span className="truncate max-w-[200px]">{course.title}</span>
                         </div>
                       </td>
@@ -248,7 +278,7 @@ export default async function DashboardPage() {
             <p className="text-sm font-medium">커뮤니티 포인트 현황</p>
             <p className="text-xs text-muted-foreground">
               {levelStats._count._all}명이 총{" "}
-              <span className="text-orange-600 font-semibold">
+              <span className="text-blue-600 font-semibold">
                 {(levelStats._sum.points ?? 0).toLocaleString()}P
               </span>{" "}
               획득
@@ -256,6 +286,38 @@ export default async function DashboardPage() {
           </div>
         </div>
       )}
+
+      {/* 월별 수익 */}
+      <div className="space-y-3">
+        <h2 className="font-semibold flex items-center gap-2">
+          <BarChart2 className="h-4 w-4 text-blue-500" />
+          월별 수익 (최근 6개월)
+        </h2>
+        <div className="border rounded-xl p-5 bg-card">
+          <div className="flex items-end gap-2 h-32">
+            {monthlyRevenue.map(({ month, amount }) => (
+              <div key={month} className="flex-1 flex flex-col items-center gap-1">
+                <span className="text-xs text-muted-foreground">
+                  {amount > 0 ? `${Math.round(amount / 1000)}K` : ""}
+                </span>
+                <div className="w-full relative" style={{ height: "80px" }}>
+                  <div
+                    className="absolute bottom-0 w-full bg-blue-400 rounded-t-md transition-all"
+                    style={{ height: `${(amount / maxMonthlyAmount) * 80}px` }}
+                  />
+                </div>
+                <span className="text-xs text-muted-foreground">{month.slice(5)}월</span>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground text-right mt-3">
+            이번 달:{" "}
+            <span className="text-blue-600 font-semibold">
+              {(monthlyRevenue[monthlyRevenue.length - 1]?.amount ?? 0).toLocaleString()}원
+            </span>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

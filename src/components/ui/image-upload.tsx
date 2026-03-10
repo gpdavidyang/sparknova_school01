@@ -67,7 +67,7 @@ export function ImageUpload({
       <div
         className={`relative border-2 border-dashed rounded-xl overflow-hidden cursor-pointer transition-colors
           ${aspectClass}
-          ${uploading ? "border-orange-300 bg-orange-50/30" : "border-border hover:border-orange-400 hover:bg-muted/30"}
+          ${uploading ? "border-blue-300 bg-blue-50/30" : "border-border hover:border-blue-400 hover:bg-muted/30"}
         `}
         onClick={() => !uploading && inputRef.current?.click()}
         onDrop={handleDrop}
@@ -88,7 +88,7 @@ export function ImageUpload({
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-muted-foreground">
             {uploading ? (
-              <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+              <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
             ) : (
               <>
                 <Upload className="h-8 w-8 opacity-40" />

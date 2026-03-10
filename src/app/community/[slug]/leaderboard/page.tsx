@@ -12,7 +12,8 @@ interface Props {
 }
 
 export default async function LeaderboardPage({ params, searchParams }: Props) {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  const slug = decodeURIComponent(rawSlug);
   const { period = "all" } = await searchParams;
 
   const community = await db.community.findUnique({ where: { slug } });
@@ -85,7 +86,7 @@ export default async function LeaderboardPage({ params, searchParams }: Props) {
               href={`?period=${p}`}
               className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                 period === p
-                  ? "bg-orange-500 text-white"
+                  ? "bg-blue-500 text-white"
                   : "bg-muted text-muted-foreground hover:bg-muted/80"
               }`}
             >
@@ -125,7 +126,7 @@ export default async function LeaderboardPage({ params, searchParams }: Props) {
                 </Badge>
               </div>
 
-              <span className="font-bold text-orange-600 text-sm">
+              <span className="font-bold text-blue-600 text-sm">
                 {points.toLocaleString()}pt
               </span>
             </div>

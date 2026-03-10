@@ -96,7 +96,7 @@ export default function SignupPage() {
           </div>
           <Button
             type="submit"
-            className="w-full bg-orange-500 hover:bg-orange-600"
+            className="w-full bg-blue-500 hover:bg-blue-600"
             disabled={loading}
           >
             {loading ? "가입 중..." : "회원가입"}
@@ -105,7 +105,7 @@ export default function SignupPage() {
 
         <p className="text-center text-sm text-muted-foreground mt-6">
           이미 계정이 있으신가요?{" "}
-          <Link href="/login" className="text-orange-500 hover:underline font-medium">
+          <Link href="/login" className="text-blue-500 hover:underline font-medium">
             로그인
           </Link>
         </p>
