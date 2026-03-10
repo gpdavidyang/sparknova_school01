@@ -17,7 +17,10 @@ export default async function CommunityLayout({ children, params }: Props) {
 
   const community = await db.community.findUnique({
     where: { slug },
-    include: { owner: { select: { id: true, name: true, avatarUrl: true } } },
+    include: {
+      owner: { select: { id: true, name: true, avatarUrl: true } },
+      _count: { select: { digitalProducts: { where: { isPublished: true } } } },
+    },
   });
 
   if (!community || !community.isActive) notFound();
@@ -28,7 +31,14 @@ export default async function CommunityLayout({ children, params }: Props) {
       })
     : null;
   const isOwner = membership?.role === "OWNER";
-  const isJoined = !!membership;
+  // 만료 여부: expiresAt이 있고 현재 시각보다 이전이면 만료
+  const now = new Date();
+  const isExpired = !!(membership?.expiresAt && membership.expiresAt < now);
+  const isJoined = !!membership && (isOwner || (!isExpired && membership.isActive));
+  // 7일 이내 만료 예정
+  const expiresInDays = membership?.expiresAt && !isExpired
+    ? Math.ceil((membership.expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+    : null;
 
   // 사이드바용 데이터: 로그인 + 멤버인 경우만
   let levelData: { points: number; level: number; todayCheckedIn: boolean; rank?: number } | null = null;
@@ -101,11 +111,26 @@ export default async function CommunityLayout({ children, params }: Props) {
         </div>
       </div>
 
+      {/* 멤버십 만료 경고 배너 */}
+      {isExpired && !isOwner && (
+        <div className="bg-red-500 text-white text-center text-sm py-2 px-4">
+          멤버십이 만료되었습니다.{" "}
+          <a href={`/community/${slug}/join`} className="underline font-semibold">갱신하기 →</a>
+        </div>
+      )}
+      {!isExpired && expiresInDays !== null && expiresInDays <= 7 && (
+        <div className="bg-yellow-400 text-yellow-900 text-center text-sm py-2 px-4">
+          멤버십이 <strong>{expiresInDays}일 후</strong> 만료됩니다.{" "}
+          <a href={`/community/${slug}/join`} className="underline font-semibold">갱신하기 →</a>
+        </div>
+      )}
+
       {/* 탭 네비게이션 */}
       <CommunityNav
         slug={slug}
         showClassroom={community.showClassroom}
         showCalendar={community.showCalendar}
+        showShop={community._count.digitalProducts > 0 || isOwner}
         isOwner={isOwner}
       />
 

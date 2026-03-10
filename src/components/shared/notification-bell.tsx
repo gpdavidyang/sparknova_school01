@@ -8,10 +8,16 @@ export function NotificationBell() {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
-    fetch("/api/notifications/unread")
-      .then((r) => r.json())
-      .then((d) => setCount(d.count ?? 0))
-      .catch(() => {});
+    const fetchCount = () => {
+      fetch("/api/notifications/unread")
+        .then((r) => r.json())
+        .then((d) => setCount(d.count ?? 0))
+        .catch(() => {});
+    };
+
+    fetchCount();
+    const timer = setInterval(fetchCount, 30_000);
+    return () => clearInterval(timer);
   }, []);
 
   return (

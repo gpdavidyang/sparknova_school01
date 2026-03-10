@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { ImagePlus, Send } from "lucide-react";
+import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { RichEditor } from "@/components/ui/rich-editor";
 import { toast } from "sonner";
 
 interface Props {
@@ -45,17 +45,13 @@ export function PostComposer({ communityId, communitySlug }: Props) {
             <AvatarFallback>나</AvatarFallback>
           </Avatar>
           <div className="flex-1 space-y-3">
-            <Textarea
-              placeholder="커뮤니티에 공유할 내용을 작성해보세요..."
+            <RichEditor
               value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="min-h-[80px] resize-none border-0 bg-muted/50 focus-visible:ring-0"
+              onChange={setContent}
+              placeholder="커뮤니티에 공유할 내용을 작성해보세요..."
+              minHeight="80px"
             />
-            <div className="flex items-center justify-between">
-              <Button variant="ghost" size="sm" className="text-muted-foreground">
-                <ImagePlus className="h-4 w-4 mr-2" />
-                사진
-              </Button>
+            <div className="flex justify-end">
               <Button
                 size="sm"
                 className="bg-blue-500 hover:bg-blue-600"

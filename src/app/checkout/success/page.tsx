@@ -19,6 +19,7 @@ export default function CheckoutSuccessPage() {
   const type = searchParams.get("type");        // "course" | "community"
   const courseId = searchParams.get("courseId");
   const slug = searchParams.get("slug");
+  const couponId = searchParams.get("couponId");
 
   useEffect(() => {
     if (called.current) return;
@@ -40,6 +41,7 @@ export default function CheckoutSuccessPage() {
         type,
         courseId,
         communitySlug: slug,
+        couponId,
       }),
     })
       .then((r) => r.json())

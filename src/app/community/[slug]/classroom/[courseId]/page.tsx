@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { BookOpen, CheckCircle2, Circle, Play, FileText, Clock, Pencil, Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { EnrollButton } from "@/components/classroom/enroll-button";
+import { CourseReviews } from "@/components/classroom/course-reviews";
 
 function getYoutubeThumbnail(url: string | null | undefined): string | null {
   if (!url) return null;
@@ -86,6 +87,20 @@ export default async function CourseDetailPage({ params }: Props) {
   const totalLessons = allLessonIds.length;
   const completedCount = completedLessons.length;
 
+  // 리뷰 조회
+  const reviews = await db.review.findMany({
+    where: { courseId },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+    include: { user: { select: { id: true, name: true, avatarUrl: true } } },
+  });
+  const avgRating = reviews.length > 0
+    ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
+    : null;
+  const myReview = session?.user?.id
+    ? reviews.find((r) => r.user.id === session.user?.id) ?? null
+    : null;
+
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       {/* 강좌 헤더 */}
@@ -158,19 +173,34 @@ export default async function CourseDetailPage({ params }: Props) {
       {/* 커리큘럼 */}
       <div className="space-y-3">
         <h2 className="text-lg font-semibold">커리큘럼</h2>
-        {course.modules.map((mod, mi) => (
+        {course.modules.map((mod, mi) => {
+          // 드립피드: 수강 신청 후 N일 이전이면 잠김
+          const isDripLocked = !isOwner && !!enrollment && !!mod.drip && mod.drip > 0 &&
+            new Date() < new Date(enrollment.enrolledAt.getTime() + mod.drip * 24 * 60 * 60 * 1000);
+          const unlockDate = isDripLocked && enrollment && mod.drip
+            ? new Date(enrollment.enrolledAt.getTime() + mod.drip * 24 * 60 * 60 * 1000)
+            : null;
+
+          return (
           <div key={mod.id} className="border rounded-xl overflow-hidden">
             <div className="bg-muted/30 px-4 py-3 flex items-center justify-between">
               <h3 className="font-medium text-sm">
                 {mi + 1}. {mod.title}
               </h3>
-              <span className="text-xs text-muted-foreground">{mod.lessons.length}개 레슨</span>
+              <div className="flex items-center gap-2">
+                {isDripLocked && unlockDate && (
+                  <span className="text-xs text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded-full border border-yellow-200">
+                    {new Intl.DateTimeFormat("ko-KR", { month: "short", day: "numeric" }).format(unlockDate)} 공개
+                  </span>
+                )}
+                <span className="text-xs text-muted-foreground">{mod.lessons.length}개 레슨</span>
+              </div>
             </div>
             <div className="divide-y">
               {mod.lessons.map((lesson, li) => {
                 const isCompleted = completedSet.has(lesson.id);
                 // 강좌 자체가 무료면 모든 레슨 접근 가능 (수강 신청 없이도)
-                const canAccess = isOwner || !!enrollment || lesson.isFree || course.isFree;
+                const canAccess = !isDripLocked && (isOwner || !!enrollment || lesson.isFree || course.isFree);
                 const thumb = lesson.type === "VIDEO" ? getYoutubeThumbnail(lesson.videoUrl) : null;
                 const showThumb = canAccess && lesson.type === "VIDEO" && (thumb || lesson.videoUrl);
                 const lessonHref = `/community/${slug}/classroom/${courseId}/lessons/${lesson.id}`;
@@ -265,7 +295,24 @@ export default async function CourseDetailPage({ params }: Props) {
               })}
             </div>
           </div>
-        ))}
+          );
+        })}
+      </div>
+
+      {/* 수강 후기 */}
+      <div className="border-t pt-6">
+        <CourseReviews
+          courseId={courseId}
+          initialReviews={reviews.map((r) => ({
+            ...r,
+            createdAt: r.createdAt.toISOString(),
+          }))}
+          initialAvg={avgRating}
+          initialTotal={reviews.length}
+          isEnrolled={!!enrollment}
+          currentUserId={session?.user?.id ?? null}
+          myReview={myReview ? { ...myReview, createdAt: myReview.createdAt.toISOString() } : null}
+        />
       </div>
     </div>
   );

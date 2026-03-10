@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Copy, Share2, Gift, Users, TrendingUp, CheckCircle2, Link2 } from "lucide-react";
+import { Copy, Share2, Gift, Users, TrendingUp, CheckCircle2, Link2, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface ReferralData {
   code: string;
@@ -143,6 +144,22 @@ export default function ReferralPage() {
           </div>
         ))}
       </div>
+
+      {/* 수익 페이지 링크 */}
+      <Link href="/referral/earnings">
+        <div className="border rounded-xl p-4 bg-card flex items-center justify-between hover:border-blue-300 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-green-50 flex items-center justify-center">
+              <Wallet className="h-5 w-5 text-green-500" />
+            </div>
+            <div>
+              <p className="font-semibold text-sm">추천 수익 확인</p>
+              <p className="text-xs text-muted-foreground">정산 내역 · 출금 요청</p>
+            </div>
+          </div>
+          <span className="text-sm text-muted-foreground">→</span>
+        </div>
+      </Link>
 
       {/* 추천 방법 안내 */}
       <div className="border rounded-xl p-5 bg-card space-y-3">

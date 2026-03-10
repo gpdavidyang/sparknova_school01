@@ -2,7 +2,8 @@ import { redirect, notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getLevelConfig } from "@/lib/gamification";
-import { Settings, BookOpen, Users, Star, Sliders } from "lucide-react";
+import { Settings, BookOpen, Users, Star, Sliders, ChevronRight, Package, Flag, Ticket } from "lucide-react";
+import Link from "next/link";
 import { CoursePublishToggle } from "@/components/admin/course-publish-toggle";
 import { MemberActions } from "@/components/admin/member-actions";
 import { LevelConfigForm } from "@/components/admin/level-config-form";
@@ -41,6 +42,12 @@ export default async function AdminPage({ params, searchParams }: Props) {
     { key: "settings", label: "커뮤니티 설정", icon: Sliders },
   ];
 
+  const quickLinks = [
+    { href: `/community/${slug}/admin/digital-products`, label: "디지털 상품 관리", icon: Package },
+    { href: `/community/${slug}/admin/reports`, label: "신고 관리", icon: Flag },
+    { href: `/community/${slug}/admin/coupons`, label: "쿠폰 관리", icon: Ticket },
+  ];
+
   return (
     <div className="space-y-6">
       {/* 헤더 */}
@@ -69,6 +76,15 @@ export default async function AdminPage({ params, searchParams }: Props) {
             <Icon className="h-3.5 w-3.5" />
             {label}
           </a>
+        ))}
+      </div>
+
+      {/* 빠른 링크 */}
+      <div className="flex flex-wrap gap-2">
+        {quickLinks.map(({ href, label, icon: Icon }) => (
+          <Link key={href} href={href} className="flex items-center gap-1.5 px-3 py-1.5 border rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
+            <Icon className="h-3.5 w-3.5" />{label}
+          </Link>
         ))}
       </div>
 
@@ -131,10 +147,23 @@ async function CoursesTab({ slug, communityId }: { slug: string; communityId: st
           {courses.map((course) => (
             <tr key={course.id} className="border-b last:border-0 hover:bg-muted/20 transition-colors">
               <td className="px-4 py-3">
-                <span className="font-medium truncate max-w-[200px] block">{course.title}</span>
+                <a
+                  href={`/community/${slug}/classroom/${course.id}/edit`}
+                  className="font-medium truncate max-w-[200px] block hover:text-blue-600 transition-colors"
+                >
+                  {course.title}
+                </a>
               </td>
               <td className="px-4 py-3 text-center text-muted-foreground">{course._count.modules}</td>
-              <td className="px-4 py-3 text-center text-muted-foreground">{course._count.enrollments}</td>
+              <td className="px-4 py-3 text-center">
+                <a
+                  href={`/community/${slug}/admin/courses/${course.id}/students`}
+                  className="inline-flex items-center gap-1 text-muted-foreground hover:text-blue-600 transition-colors text-sm"
+                >
+                  {course._count.enrollments}
+                  <ChevronRight className="h-3 w-3" />
+                </a>
+              </td>
               <td className="px-4 py-3 text-center">
                 <span className={`text-xs font-medium ${course.isFree ? "text-green-600" : "text-blue-600"}`}>
                   {course.isFree ? "무료" : `${course.price?.toLocaleString()}원`}

@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { AlertTriangle } from "lucide-react";
 import { ImageUpload } from "@/components/ui/image-upload";
 
 interface CommunitySettings {
@@ -21,10 +24,13 @@ interface Props {
 }
 
 export function CommunitySettingsForm({ slug, initial }: Props) {
+  const router = useRouter();
   const [form, setForm] = useState(initial);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   const set = (key: keyof CommunitySettings, value: unknown) => {
     setForm((p) => ({ ...p, [key]: value }));
@@ -182,6 +188,43 @@ export function CommunitySettingsForm({ slug, initial }: Props) {
           {saving ? "저장 중..." : "저장하기"}
         </button>
         {saved && <span className="text-sm text-green-600">저장되었습니다.</span>}
+      </div>
+
+      {/* 위험 구역 */}
+      <div className="border border-red-200 rounded-xl p-5 space-y-4 mt-6">
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="h-4 w-4 text-red-500" />
+          <h3 className="text-sm font-semibold text-red-600">위험 구역</h3>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          커뮤니티를 삭제하면 모든 게시글, 강좌, 멤버 데이터가 영구 삭제되며 복구할 수 없습니다.
+          확인을 위해 커뮤니티 이름 <strong>{initial.name}</strong>을 입력하세요.
+        </p>
+        <input
+          value={deleteConfirm}
+          onChange={(e) => setDeleteConfirm(e.target.value)}
+          placeholder={initial.name}
+          className="w-full border border-red-200 rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-red-400"
+        />
+        <button
+          disabled={deleteConfirm !== initial.name || deleting}
+          onClick={async () => {
+            if (!confirm(`"${initial.name}" 커뮤니티를 정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) return;
+            setDeleting(true);
+            const res = await fetch(`/api/communities/${slug}`, { method: "DELETE" });
+            if (!res.ok) {
+              toast.error("삭제에 실패했습니다.");
+              setDeleting(false);
+              return;
+            }
+            toast.success("커뮤니티가 삭제되었습니다.");
+            router.push("/dashboard");
+            router.refresh();
+          }}
+          className="px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors disabled:opacity-40"
+        >
+          {deleting ? "삭제 중..." : "커뮤니티 영구 삭제"}
+        </button>
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import {
   Zap, Users, BookOpen, Trophy, Gift, ArrowRight,
   CheckCircle, Star, LogIn, Play, Lock,
 } from "lucide-react";
+import { ReferralTracker } from "@/components/shared/referral-tracker";
 
 const features = [
   {
@@ -46,7 +47,12 @@ function getYoutubeThumbnail(url: string | null | undefined): string | null {
   return m ? `https://img.youtube.com/vi/${m[1]}/mqdefault.jpg` : null;
 }
 
-export default async function LandingPage() {
+interface Props {
+  searchParams: Promise<{ ref?: string }>;
+}
+
+export default async function LandingPage({ searchParams }: Props) {
+  const { ref } = await searchParams;
   const session = await auth();
   if (session?.user) redirect("/explore");
 
@@ -111,6 +117,7 @@ export default async function LandingPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground" style={lightVars}>
+      {ref && <ReferralTracker code={ref} />}
       {/* 네비게이션 */}
       <header className="fixed top-0 left-0 right-0 z-50 h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="max-w-6xl mx-auto h-full flex items-center justify-between px-6">

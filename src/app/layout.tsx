@@ -11,6 +11,17 @@ export const metadata: Metadata = {
   },
   description: "당신의 지식이 세계를 바꿉니다. 커뮤니티 기반 글로벌 지식 비즈니스 플랫폼",
   keywords: ["온라인강의", "커뮤니티", "크리에이터", "지식비즈니스", "SparkNova"],
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "SparkNova",
+  },
+  openGraph: {
+    type: "website",
+    siteName: "SparkNova School",
+    locale: "ko_KR",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -7,9 +7,31 @@ import {
   Plus, ArrowRight, DollarSign, Star, BarChart2,
 } from "lucide-react";
 
-export default async function DashboardPage() {
+interface Props {
+  searchParams: Promise<{ period?: string }>;
+}
+
+const PERIODS = [
+  { key: "7d",  label: "7일" },
+  { key: "30d", label: "30일" },
+  { key: "90d", label: "90일" },
+  { key: "all", label: "전체" },
+] as const;
+
+function getPeriodStart(period: string): Date | null {
+  const now = new Date();
+  if (period === "7d")  { now.setDate(now.getDate() - 7); return now; }
+  if (period === "30d") { now.setDate(now.getDate() - 30); return now; }
+  if (period === "90d") { now.setDate(now.getDate() - 90); return now; }
+  return null; // all
+}
+
+export default async function DashboardPage({ searchParams }: Props) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
+
+  const { period = "30d" } = await searchParams;
+  const periodStart = getPeriodStart(period);
 
   // 내가 운영하는 커뮤니티
   const communities = await db.community.findMany({
@@ -21,6 +43,7 @@ export default async function DashboardPage() {
   });
 
   const communityIds = communities.map((c) => c.id);
+  const periodFilter = periodStart ? { gte: periodStart } : undefined;
 
   // 커뮤니티별 통계 한번에 조회
   const [memberStats, courseStats, paymentStats, levelStats] = await Promise.all([
@@ -33,14 +56,18 @@ export default async function DashboardPage() {
     // 강좌별 수강자 수
     db.enrollment.groupBy({
       by: ["courseId"],
-      where: { course: { communityId: { in: communityIds } } },
+      where: {
+        course: { communityId: { in: communityIds } },
+        ...(periodFilter ? { enrolledAt: periodFilter } : {}),
+      },
       _count: { _all: true },
     }),
-    // 결제 수익 (communityId별)
+    // 결제 수익 (기간 필터 적용)
     db.payment.findMany({
       where: {
         status: "PAID",
         metadata: { path: ["type"], equals: "community" },
+        ...(periodFilter ? { paidAt: periodFilter } : {}),
       },
       select: { amount: true, metadata: true },
     }),
@@ -63,24 +90,34 @@ export default async function DashboardPage() {
   // 커뮤니티별 멤버 수 맵
   const memberMap = new Map(memberStats.map((m) => [m.communityId, m._count._all]));
 
-  // 수익 계산 (커뮤니티 구독)
-  const communityRevenue = paymentStats
-    .filter((p) => {
-      const meta = p.metadata as Record<string, string> | null;
-      return communityIds.some((id) => {
-        // slug 기반이므로 간단히 amount 합산
-        return meta?.type === "community";
-      });
-    })
-    .reduce((sum, p) => sum + p.amount, 0);
+  // 수익 계산 (커뮤니티 구독 — 기간 내)
+  const communityRevenue = paymentStats.reduce((sum, p) => sum + p.amount, 0);
 
   const courseRevenue = await db.payment.aggregate({
     where: {
       status: "PAID",
       metadata: { path: ["type"], equals: "course" },
+      ...(periodFilter ? { paidAt: periodFilter } : {}),
     },
     _sum: { amount: true },
   });
+
+  // 커뮤니티별 수익 집계 (기간 내)
+  const allPeriodPayments = await db.payment.findMany({
+    where: {
+      status: "PAID",
+      ...(periodFilter ? { paidAt: periodFilter } : {}),
+    },
+    select: { amount: true, metadata: true },
+  });
+  const communityRevenueMap = new Map<string, number>();
+  for (const p of allPeriodPayments) {
+    const meta = p.metadata as Record<string, string> | null;
+    if (meta?.type === "community" && meta.communitySlug) {
+      const c = communities.find((c) => c.slug === meta.communitySlug);
+      if (c) communityRevenueMap.set(c.id, (communityRevenueMap.get(c.id) ?? 0) + p.amount);
+    }
+  }
 
   const totalRevenue = communityRevenue + (courseRevenue._sum.amount ?? 0);
 
@@ -122,11 +159,12 @@ export default async function DashboardPage() {
   const totalCourses = courses.length;
   const totalEnrollments = courseStats.reduce((sum, s) => sum + s._count._all, 0);
 
+  const periodLabel = PERIODS.find((p) => p.key === period)?.label ?? "30일";
   const summaryCards = [
     { label: "총 멤버", value: totalMembers.toLocaleString(), icon: Users, color: "text-blue-500", bg: "bg-blue-50" },
     { label: "강좌", value: totalCourses.toLocaleString(), icon: BookOpen, color: "text-purple-500", bg: "bg-purple-50" },
-    { label: "수강 등록", value: totalEnrollments.toLocaleString(), icon: TrendingUp, color: "text-green-500", bg: "bg-green-50" },
-    { label: "총 수익", value: `${totalRevenue.toLocaleString()}원`, icon: DollarSign, color: "text-blue-500", bg: "bg-blue-50" },
+    { label: `수강 등록 (${periodLabel})`, value: totalEnrollments.toLocaleString(), icon: TrendingUp, color: "text-green-500", bg: "bg-green-50" },
+    { label: `수익 (${periodLabel})`, value: `${totalRevenue.toLocaleString()}원`, icon: DollarSign, color: "text-blue-500", bg: "bg-blue-50" },
   ];
 
   return (
@@ -149,6 +187,23 @@ export default async function DashboardPage() {
           <Plus className="h-4 w-4 mr-1" />
           커뮤니티 만들기
         </Link>
+      </div>
+
+      {/* 기간 필터 */}
+      <div className="flex gap-1 border-b">
+        {PERIODS.map(({ key, label }) => (
+          <a
+            key={key}
+            href={`/dashboard?period=${key}`}
+            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+              period === key
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {label}
+          </a>
+        ))}
       </div>
 
       {/* 요약 통계 */}
@@ -195,7 +250,7 @@ export default async function DashboardPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-sm truncate">{c.name}</p>
-                    <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground flex-wrap">
                       <span className="flex items-center gap-1">
                         <Users className="h-3 w-3" />{members.toLocaleString()}명
                       </span>
@@ -205,6 +260,12 @@ export default async function DashboardPage() {
                       <span className={`font-medium ${c.joinType === "PAID" ? "text-blue-500" : "text-green-500"}`}>
                         {c.joinType === "PAID" ? `유료 ${c.price?.toLocaleString()}원` : "무료"}
                       </span>
+                      {communityRevenueMap.has(c.id) && (
+                        <span className="font-medium text-blue-600 flex items-center gap-1">
+                          <DollarSign className="h-3 w-3" />
+                          {periodLabel} {communityRevenueMap.get(c.id)!.toLocaleString()}원
+                        </span>
+                      )}
                     </div>
                   </div>
                   <Link

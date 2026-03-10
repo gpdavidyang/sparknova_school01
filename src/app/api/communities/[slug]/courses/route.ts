@@ -36,7 +36,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
       order: (lastCourse?.order ?? 0) + 1,
       isPublished: true,
       modules: {
-        create: (modules ?? []).map((mod: { title: string; lessons: { title: string; type: string; content?: string; videoUrl?: string; isFree?: boolean }[] }, mi: number) => ({
+        create: (modules ?? []).map((mod: { title: string; lessons: { title: string; type: string; content?: string; videoUrl?: string; isFree?: boolean; duration?: number | null }[] }, mi: number) => ({
           title: mod.title,
           order: mi,
           isPublished: true,
@@ -49,6 +49,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
               order: li,
               isPublished: true,
               isFree: lesson.isFree ?? false,
+              duration: lesson.duration ?? null,
             })),
           },
         })),

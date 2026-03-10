@@ -7,9 +7,35 @@ import { ko } from "date-fns/locale";
 import { ArrowLeft, Heart, MessageCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CommentSection } from "@/components/community/comment-section";
+import { PostDetailBody } from "@/components/community/post-detail-actions";
+import type { Metadata } from "next";
 
 interface Props {
   params: Promise<{ slug: string; id: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug: rawSlug, id } = await params;
+  const slug = decodeURIComponent(rawSlug);
+  const post = await db.post.findUnique({
+    where: { id, deletedAt: null },
+    select: {
+      content: true,
+      author: { select: { name: true } },
+      community: { select: { name: true } },
+    },
+  });
+  if (!post) return { title: "게시글을 찾을 수 없습니다" };
+
+  const text = post.content.replace(/<[^>]+>/g, "").slice(0, 120);
+  return {
+    title: `${post.author.name ?? "익명"}의 게시글 — ${post.community?.name ?? slug}`,
+    description: text,
+    openGraph: {
+      title: `${post.community?.name ?? slug} 커뮤니티`,
+      description: text,
+    },
+  };
 }
 
 export default async function PostDetailPage({ params }: Props) {
@@ -33,6 +59,8 @@ export default async function PostDetailPage({ params }: Props) {
         where: { userId_postId: { userId: session.user.id, postId: id } },
       }))
     : false;
+
+  const isAuthor = session?.user?.id === post.author.id;
 
   return (
     <div className="max-w-2xl mx-auto py-6 px-4 space-y-6">
@@ -66,8 +94,13 @@ export default async function PostDetailPage({ params }: Props) {
           )}
         </div>
 
-        {/* 본문 */}
-        <p className="text-sm whitespace-pre-wrap leading-relaxed">{post.content}</p>
+        {/* 본문 + 수정/삭제 */}
+        <PostDetailBody
+          postId={id}
+          initialContent={post.content}
+          redirectTo={`/community/${slug}`}
+          isAuthor={isAuthor}
+        />
 
         {/* 액션 */}
         <div className="flex items-center gap-3 pt-2 border-t">
@@ -90,3 +123,4 @@ export default async function PostDetailPage({ params }: Props) {
     </div>
   );
 }
+

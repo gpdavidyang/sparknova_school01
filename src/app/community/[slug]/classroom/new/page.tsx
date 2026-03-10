@@ -16,6 +16,8 @@ interface Lesson {
   type: "TEXT" | "VIDEO";
   content: string;
   videoUrl: string;
+  isFree: boolean;
+  duration: string; // 분 단위 입력
 }
 interface Module {
   title: string;
@@ -33,7 +35,7 @@ export default function NewCoursePage() {
   const [price, setPrice] = useState("");
   const [thumbnailUrl, setThumbnailUrl] = useState("");
   const [modules, setModules] = useState<Module[]>([
-    { title: "모듈 1", lessons: [{ title: "", type: "TEXT", content: "", videoUrl: "" }], open: true },
+    { title: "모듈 1", lessons: [{ title: "", type: "TEXT", content: "", videoUrl: "", isFree: false, duration: "" }], open: true },
   ]);
 
   function addModule() {
@@ -46,7 +48,7 @@ export default function NewCoursePage() {
 
   function addLesson(mi: number) {
     const updated = [...modules];
-    updated[mi].lessons.push({ title: "", type: "TEXT", content: "", videoUrl: "" });
+    updated[mi].lessons.push({ title: "", type: "TEXT", content: "", videoUrl: "", isFree: false, duration: "" });
     setModules(updated);
   }
 
@@ -62,7 +64,7 @@ export default function NewCoursePage() {
     setModules(updated);
   }
 
-  function updateLesson(mi: number, li: number, key: keyof Lesson, value: string) {
+  function updateLesson(mi: number, li: number, key: keyof Lesson, value: string | boolean) {
     const updated = [...modules];
     updated[mi].lessons[li] = { ...updated[mi].lessons[li], [key]: value };
     setModules(updated);
@@ -82,7 +84,14 @@ export default function NewCoursePage() {
         thumbnailUrl: thumbnailUrl || null,
         modules: modules.map((m) => ({
           title: m.title,
-          lessons: m.lessons.filter((l) => l.title.trim()),
+          lessons: m.lessons.filter((l) => l.title.trim()).map((l) => ({
+            title: l.title,
+            type: l.type,
+            content: l.content,
+            videoUrl: l.videoUrl,
+            isFree: l.isFree,
+            duration: l.duration ? parseInt(l.duration) * 60 : null,
+          })),
         })),
       }),
     });
@@ -197,10 +206,28 @@ export default function NewCoursePage() {
                             ))}
                           </div>
                           {lesson.type === "VIDEO" ? (
-                            <Input placeholder="YouTube / Vimeo URL" value={lesson.videoUrl} onChange={(e) => updateLesson(mi, li, "videoUrl", e.target.value)} className="h-8 text-sm" />
+                            <div className="space-y-1.5">
+                              <Input placeholder="YouTube / Vimeo URL" value={lesson.videoUrl} onChange={(e) => updateLesson(mi, li, "videoUrl", e.target.value)} className="h-8 text-sm" />
+                              <Input
+                                type="number"
+                                placeholder="재생시간 (분)"
+                                value={lesson.duration}
+                                onChange={(e) => updateLesson(mi, li, "duration", e.target.value)}
+                                className="h-8 text-sm w-36"
+                                min="0"
+                              />
+                            </div>
                           ) : (
                             <Textarea placeholder="레슨 내용..." value={lesson.content} onChange={(e) => updateLesson(mi, li, "content", e.target.value)} rows={2} className="text-sm resize-none" />
                           )}
+                          <button
+                            type="button"
+                            onClick={() => updateLesson(mi, li, "isFree", !lesson.isFree)}
+                            className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border transition-colors ${lesson.isFree ? "bg-green-50 border-green-300 text-green-700" : "bg-muted border-border text-muted-foreground hover:border-green-300"}`}
+                          >
+                            <span className={`h-2 w-2 rounded-full ${lesson.isFree ? "bg-green-500" : "bg-muted-foreground/40"}`} />
+                            {lesson.isFree ? "무료 공개" : "미리보기 없음"}
+                          </button>
                         </div>
                         <button type="button" onClick={() => removeLesson(mi, li)} className="text-muted-foreground hover:text-destructive mt-1">
                           <Trash2 className="h-4 w-4" />

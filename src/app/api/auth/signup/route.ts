@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { grantPoints } from "@/lib/gamification";
 import { checkAndGrantReferralBadges } from "@/lib/badges";
+import { sendWelcomeEmail } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   const { name, email, password } = await req.json();
@@ -81,6 +82,9 @@ export async function POST(req: NextRequest) {
       }
     }
   }
+
+  // 환영 이메일 (non-blocking)
+  void sendWelcomeEmail({ to: email, name });
 
   return NextResponse.json({ id: user.id }, { status: 201 });
 }

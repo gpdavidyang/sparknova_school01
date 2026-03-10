@@ -20,6 +20,7 @@ export async function GET(
     id: course.id,
     title: course.title,
     price: course.price ?? 0,
+    communityId: course.communityId,
     communitySlug: course.community.slug,
     communityName: course.community.name,
   });

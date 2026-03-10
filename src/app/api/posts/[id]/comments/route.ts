@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { grantPoints } from "@/lib/gamification";
+import { sendCommentNotificationEmail } from "@/lib/email";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -40,7 +41,7 @@ export async function POST(req: NextRequest, { params }: Params) {
 
   const post = await db.post.findUnique({
     where: { id: postId },
-    select: { id: true, communityId: true, authorId: true },
+    select: { id: true, communityId: true, authorId: true, title: true, author: { select: { email: true, emailNotifComments: true } } },
   });
   if (!post) return NextResponse.json({ error: "게시물을 찾을 수 없습니다." }, { status: 404 });
 
@@ -82,6 +83,18 @@ export async function POST(req: NextRequest, { params }: Params) {
         referenceType: "post",
       },
     });
+
+    // 이메일 알림 (사용자 설정 확인)
+    if (post.author.email && post.author.emailNotifComments) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+      void sendCommentNotificationEmail({
+        to: post.author.email,
+        commenterName: session.user.name ?? "누군가",
+        postTitle: post.title ?? "게시글",
+        commentBody: content.trim().slice(0, 120),
+        postUrl: `${appUrl}/community/${post.communityId}/posts/${postId}`,
+      });
+    }
   }
 
   // 대댓글인 경우 원댓글 작성자에게 알림

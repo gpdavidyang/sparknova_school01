@@ -1,32 +1,38 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { Receipt, CreditCard, BookOpen, Users } from "lucide-react";
+import { Receipt, CreditCard } from "lucide-react";
+import { PaymentList } from "./payment-list";
 
 export default async function MyPaymentsPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
   const payments = await db.payment.findMany({
-    where: { userId: session.user.id, status: "PAID" },
+    where: { userId: session.user.id, status: { in: ["PAID", "CANCELLED"] } },
     orderBy: { paidAt: "desc" },
     take: 50,
+    select: {
+      id: true,
+      amount: true,
+      status: true,
+      method: true,
+      paidAt: true,
+      metadata: true,
+    },
   });
 
-  const statusLabel: Record<string, string> = {
-    PAID: "결제 완료",
-    PENDING: "처리 중",
-    FAILED: "실패",
-    REFUNDED: "환불",
-    CANCELLED: "취소",
-  };
+  const REFUND_WINDOW_DAYS = 7;
+  const now = Date.now();
 
-  const methodLabel: Record<string, string> = {
-    카드: "카드",
-    가상계좌: "가상계좌",
-    간편결제: "간편결제",
-    휴대폰: "휴대폰",
-  };
+  const enriched = payments.map((p) => ({
+    ...p,
+    paidAt: p.paidAt?.toISOString() ?? null,
+    canRefund:
+      p.status === "PAID" &&
+      !!p.paidAt &&
+      now - p.paidAt.getTime() < REFUND_WINDOW_DAYS * 24 * 60 * 60 * 1000,
+  }));
 
   return (
     <div className="max-w-2xl mx-auto py-8 px-4 space-y-6">
@@ -46,57 +52,9 @@ export default async function MyPaymentsPage() {
           <p>결제 내역이 없습니다.</p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {payments.map((p) => {
-            const meta = p.metadata as Record<string, string> | null;
-            const type = meta?.type ?? "";
-            const orderName = meta?.orderName ?? "주문";
-
-            return (
-              <div key={p.id} className="border rounded-xl p-4 bg-card flex items-center gap-4">
-                {/* 아이콘 */}
-                <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${
-                  type === "course" ? "bg-blue-50" : "bg-blue-50"
-                }`}>
-                  {type === "course"
-                    ? <BookOpen className="h-5 w-5 text-blue-500" />
-                    : <Users className="h-5 w-5 text-blue-500" />
-                  }
-                </div>
-
-                {/* 정보 */}
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm truncate">{orderName}</p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-xs text-muted-foreground">
-                      {p.paidAt
-                        ? new Intl.DateTimeFormat("ko-KR", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          }).format(p.paidAt)
-                        : "-"}
-                    </span>
-                    {p.method && (
-                      <span className="text-xs text-muted-foreground">
-                        · {methodLabel[p.method] ?? p.method}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* 금액 + 상태 */}
-                <div className="text-right shrink-0">
-                  <p className="font-bold text-sm">{p.amount.toLocaleString()}원</p>
-                  <span className="text-xs text-green-600 font-medium">
-                    {statusLabel[p.status] ?? p.status}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <PaymentList payments={enriched} />
       )}
     </div>
   );
 }
+

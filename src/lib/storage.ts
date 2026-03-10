@@ -9,7 +9,7 @@ function getAdminClient() {
   return createClient(url, serviceKey ?? anonKey);
 }
 
-export type StorageBucket = "avatars" | "covers" | "thumbnails";
+export type StorageBucket = "avatars" | "covers" | "thumbnails" | "digital-products";
 
 /**
  * 파일을 Supabase Storage에 업로드하고 공개 URL 반환

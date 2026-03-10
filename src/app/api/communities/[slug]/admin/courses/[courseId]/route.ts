@@ -69,8 +69,8 @@ export async function PUT(req: NextRequest, { params }: Params) {
   const { title, description, thumbnailUrl, isFree, price, modules } = await req.json();
   if (!title?.trim()) return NextResponse.json({ error: "강좌 제목을 입력해주세요." }, { status: 400 });
 
-  type LessonInput = { title: string; type: string; content?: string; videoUrl?: string; isFree?: boolean };
-  type ModuleInput = { title: string; lessons: LessonInput[] };
+  type LessonInput = { title: string; type: string; content?: string; videoUrl?: string; isFree?: boolean; duration?: number | null };
+  type ModuleInput = { title: string; drip?: number | null; lessons: LessonInput[] };
 
   // 기존 모듈/레슨 삭제 후 재생성 (Lesson은 Module cascade로 자동 삭제)
   await db.module.deleteMany({ where: { courseId } });
@@ -88,6 +88,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
           title: mod.title,
           order: mi,
           isPublished: true,
+          drip: mod.drip ?? null,
           lessons: {
             create: (mod.lessons ?? []).map((lesson: LessonInput, li: number) => ({
               title: lesson.title,
@@ -97,6 +98,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
               order: li,
               isPublished: true,
               isFree: lesson.isFree ?? false,
+              duration: lesson.duration ?? null,
             })),
           },
         })),

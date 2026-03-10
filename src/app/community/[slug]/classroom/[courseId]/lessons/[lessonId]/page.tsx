@@ -4,9 +4,27 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { ChevronLeft, ChevronRight, CheckCircle2, List, Lock, Zap, ArrowRight } from "lucide-react";
 import { LessonCompleteButton } from "@/components/classroom/lesson-complete-button";
+import { LessonCurriculumMobile } from "@/components/classroom/lesson-curriculum-mobile";
+import type { Metadata } from "next";
 
 interface Props {
   params: Promise<{ slug: string; courseId: string; lessonId: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { lessonId } = await params;
+  const lesson = await db.lesson.findUnique({
+    where: { id: lessonId },
+    select: {
+      title: true,
+      module: { select: { course: { select: { title: true } } } },
+    },
+  });
+  if (!lesson) return { title: "레슨을 찾을 수 없습니다" };
+  return {
+    title: `${lesson.title} — ${lesson.module.course.title}`,
+    robots: { index: false },
+  };
 }
 
 function getEmbedUrl(url: string) {
@@ -56,7 +74,7 @@ export default async function LessonPage({ params }: Props) {
 
   const enrollment = isLoggedIn
     ? await db.enrollment.findUnique({
-        where: { courseId_userId: { courseId, userId: session!.user!.id } },
+        where: { courseId_userId: { courseId, userId: session!.user!.id! } },
       })
     : null;
 
@@ -66,11 +84,21 @@ export default async function LessonPage({ params }: Props) {
     redirect(`/community/${slug}/classroom/${courseId}`);
   }
 
+  // 드립피드: 수강 신청 후 N일 이전이면 접근 불가
+  const moduleDrip = lesson.module.drip;
+  if (!isOwner && enrollment && moduleDrip && moduleDrip > 0) {
+    const enrolledAt = enrollment.enrolledAt;
+    const unlockDate = new Date(enrolledAt.getTime() + moduleDrip * 24 * 60 * 60 * 1000);
+    if (new Date() < unlockDate) {
+      redirect(`/community/${slug}/classroom/${courseId}?locked=drip`);
+    }
+  }
+
   // 진도 (로그인+수강 상태만)
   const canTrack = isLoggedIn && (!!enrollment || isOwner);
   const lessonProgress = canTrack
     ? await db.lessonProgress.findUnique({
-        where: { lessonId_userId: { lessonId, userId: session!.user!.id } },
+        where: { lessonId_userId: { lessonId, userId: session!.user!.id! } },
       })
     : null;
   const isCompleted = lessonProgress?.isCompleted ?? false;
@@ -96,6 +124,17 @@ export default async function LessonPage({ params }: Props) {
           <span>/</span>
           <span>{lesson.module.title}</span>
         </div>
+
+        {/* 모바일 커리큘럼 */}
+        <LessonCurriculumMobile
+          modules={lesson.module.course.modules}
+          currentLessonId={lessonId}
+          canTrack={canTrack}
+          courseIsFree={courseIsFree}
+          slug={slug}
+          courseId={courseId}
+          isLoggedIn={isLoggedIn}
+        />
 
         <div className="space-y-4">
           <div className="flex items-start justify-between gap-4">

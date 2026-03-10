@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { loadTossPayments } from "@tosspayments/tosspayments-sdk";
-import { CreditCard, BookOpen, Lock } from "lucide-react";
+import { CreditCard, BookOpen, Lock, Ticket, X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -11,8 +11,19 @@ interface CourseInfo {
   id: string;
   title: string;
   price: number;
+  communityId: string;
   communitySlug: string;
   communityName: string;
+}
+
+interface CouponResult {
+  valid: boolean;
+  couponId: string;
+  discountType: string;
+  discountValue: number;
+  discount: number;
+  finalAmount: number;
+  description: string | null;
 }
 
 export default function CourseCheckoutPage() {
@@ -22,6 +33,11 @@ export default function CourseCheckoutPage() {
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
 
+  // 쿠폰
+  const [couponCode, setCouponCode] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState<CouponResult | null>(null);
+
   useEffect(() => {
     fetch(`/api/courses/${courseId}/info`)
       .then((r) => r.json())
@@ -29,6 +45,36 @@ export default function CourseCheckoutPage() {
       .catch(() => toast.error("강좌 정보를 불러올 수 없습니다."))
       .finally(() => setLoading(false));
   }, [courseId]);
+
+  const finalPrice = appliedCoupon ? appliedCoupon.finalAmount : (course?.price ?? 0);
+
+  async function applyCoupon() {
+    if (!couponCode.trim() || !course) return;
+    setCouponLoading(true);
+    try {
+      const res = await fetch("/api/coupons/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: couponCode, communityId: course.communityId, amount: course.price }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error);
+        return;
+      }
+      setAppliedCoupon(data);
+      toast.success(`${data.discount.toLocaleString()}원 할인 적용!`);
+    } catch {
+      toast.error("쿠폰 확인에 실패했습니다.");
+    } finally {
+      setCouponLoading(false);
+    }
+  }
+
+  function removeCoupon() {
+    setAppliedCoupon(null);
+    setCouponCode("");
+  }
 
   async function handlePay() {
     if (!course) return;
@@ -40,16 +86,17 @@ export default function CourseCheckoutPage() {
       );
       const payment = toss.payment({ customerKey: `user_${courseId}` });
 
+      const couponParam = appliedCoupon ? `&couponId=${appliedCoupon.couponId}` : "";
+
       await payment.requestPayment({
         method: "CARD",
-        amount: { currency: "KRW", value: course.price },
+        amount: { currency: "KRW", value: finalPrice },
         orderId: `course_${courseId}_${Date.now()}`,
         orderName: course.title,
-        successUrl: `${window.location.origin}/checkout/success?type=course&courseId=${courseId}&slug=${course.communitySlug}`,
+        successUrl: `${window.location.origin}/checkout/success?type=course&courseId=${courseId}&slug=${course.communitySlug}${couponParam}`,
         failUrl: `${window.location.origin}/checkout/fail`,
       });
     } catch (e: unknown) {
-      // 사용자가 직접 취소한 경우는 에러 표시 안 함
       if (e instanceof Error && e.message !== "결제가 취소되었습니다.") {
         toast.error(e.message ?? "결제 중 오류가 발생했습니다.");
       }
@@ -91,12 +138,62 @@ export default function CourseCheckoutPage() {
             <p className="font-semibold">{course.title}</p>
           </div>
 
-          <div className="border-t pt-4 flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">결제 금액</span>
-            <span className="text-xl font-bold text-blue-600">
-              {course.price.toLocaleString()}원
-            </span>
+          <div className="border-t pt-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">결제 금액</span>
+              <span className={`text-lg font-bold ${appliedCoupon ? "line-through text-muted-foreground" : "text-blue-600"}`}>
+                {course.price.toLocaleString()}원
+              </span>
+            </div>
+            {appliedCoupon && (
+              <>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-green-600">쿠폰 할인</span>
+                  <span className="text-green-600 font-medium">-{appliedCoupon.discount.toLocaleString()}원</span>
+                </div>
+                <div className="flex items-center justify-between border-t pt-2">
+                  <span className="text-sm font-medium">최종 결제액</span>
+                  <span className="text-xl font-bold text-blue-600">{finalPrice.toLocaleString()}원</span>
+                </div>
+              </>
+            )}
           </div>
+        </div>
+
+        {/* 쿠폰 입력 */}
+        <div className="space-y-2">
+          {appliedCoupon ? (
+            <div className="flex items-center gap-2 px-3 py-2.5 bg-green-50 border border-green-200 rounded-lg text-sm">
+              <Check className="h-4 w-4 text-green-600 shrink-0" />
+              <span className="flex-1 text-green-700">
+                <strong>{couponCode}</strong> 적용됨
+                {appliedCoupon.description ? ` — ${appliedCoupon.description}` : ""}
+              </span>
+              <button onClick={removeCoupon} className="text-green-500 hover:text-green-700">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Ticket className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                  placeholder="쿠폰 코드 입력"
+                  className="w-full border rounded-lg pl-9 pr-3 py-2.5 text-sm bg-background font-mono uppercase placeholder:normal-case placeholder:font-sans"
+                  onKeyDown={(e) => e.key === "Enter" && applyCoupon()}
+                />
+              </div>
+              <button
+                onClick={applyCoupon}
+                disabled={couponLoading || !couponCode.trim()}
+                className="px-4 py-2.5 text-sm font-medium border rounded-lg hover:bg-muted transition-colors disabled:opacity-50"
+              >
+                {couponLoading ? "확인 중..." : "적용"}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* 보안 배지 */}
@@ -112,7 +209,7 @@ export default function CourseCheckoutPage() {
           disabled={paying}
         >
           <CreditCard className="h-5 w-5 mr-2" />
-          {paying ? "결제창 열는 중..." : `${course.price.toLocaleString()}원 결제하기`}
+          {paying ? "결제창 열는 중..." : `${finalPrice.toLocaleString()}원 결제하기`}
         </Button>
 
         <Button

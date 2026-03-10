@@ -106,6 +106,9 @@ export function Header({ myCommunities = [] }: HeaderProps) {
                       <Link href="/my/payments" className="w-full block">결제 내역</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
+                      <Link href="/settings" className="w-full block">설정</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
                       <Link href="/referral" className="w-full block">추천인 센터</Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
@@ -119,10 +122,15 @@ export function Header({ myCommunities = [] }: HeaderProps) {
                 </DropdownMenu>
               </>
             ) : (
-              <Link href="/login" className={cn(buttonVariants({ size: "sm" }), "bg-blue-500 hover:bg-blue-600")}>
-                <LogIn className="h-4 w-4 mr-1" />
-                로그인
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link href="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:inline">
+                  요금제
+                </Link>
+                <Link href="/login" className={cn(buttonVariants({ size: "sm" }), "bg-blue-500 hover:bg-blue-600")}>
+                  <LogIn className="h-4 w-4 mr-1" />
+                  로그인
+                </Link>
+              </div>
             )}
           </div>
         </div>

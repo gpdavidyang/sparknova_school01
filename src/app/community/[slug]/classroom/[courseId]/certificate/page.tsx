@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Award, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
+import { CertificatePrintButton } from "@/components/classroom/certificate-print-button";
 
 interface Props {
   params: Promise<{ slug: string; courseId: string }>;
@@ -29,7 +30,7 @@ export default async function CertificatePage({ params }: Props) {
   }).format(certificate.issuedAt);
 
   return (
-    <div className="min-h-[60vh] flex items-center justify-center py-12">
+    <div className="min-h-[60vh] flex items-center justify-center py-12 print:min-h-screen print:py-0">
       <div className="text-center space-y-8 max-w-lg">
         <div className="inline-flex items-center justify-center h-24 w-24 rounded-full bg-yellow-50 border-4 border-yellow-200 mx-auto">
           <Award className="h-12 w-12 text-yellow-500" />
@@ -58,7 +59,7 @@ export default async function CertificatePage({ params }: Props) {
           <p className="text-xs text-muted-foreground">{issuedAt} 발급</p>
         </div>
 
-        <div className="flex gap-3 justify-center">
+        <div className="flex gap-3 justify-center print:hidden">
           <Link
             href={`/community/${slug}/classroom`}
             className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium border border-input bg-background hover:bg-muted transition-colors"
@@ -67,10 +68,11 @@ export default async function CertificatePage({ params }: Props) {
           </Link>
           <Link
             href={`/community/${slug}/classroom/${courseId}`}
-            className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 transition-colors"
+            className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium border hover:bg-muted transition-colors"
           >
             강좌 다시 보기
           </Link>
+          <CertificatePrintButton />
         </div>
       </div>
     </div>

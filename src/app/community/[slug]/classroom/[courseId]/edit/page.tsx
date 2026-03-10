@@ -18,9 +18,11 @@ interface Lesson {
   content: string;
   videoUrl: string;
   isFree: boolean;
+  duration: string; // 분 단위 입력
 }
 interface Module {
   title: string;
+  drip: string; // 공개 지연일 (빈 문자열 = 즉시 공개)
   lessons: Lesson[];
   open: boolean;
 }
@@ -48,8 +50,9 @@ export default function EditCoursePage() {
         setIsFree(data.isFree ?? true);
         setPrice(data.price?.toString() ?? "");
         setModules(
-          (data.modules ?? []).map((m: { title: string; lessons: { title: string; type: string; content: string | null; videoUrl: string | null; isFree: boolean }[] }) => ({
+          (data.modules ?? []).map((m: { title: string; drip?: number | null; lessons: { title: string; type: string; content: string | null; videoUrl: string | null; isFree: boolean; duration?: number | null }[] }) => ({
             title: m.title,
+            drip: m.drip != null ? String(m.drip) : "",
             open: true,
             lessons: (m.lessons ?? []).map((l) => ({
               title: l.title,
@@ -57,6 +60,7 @@ export default function EditCoursePage() {
               content: l.content ?? "",
               videoUrl: l.videoUrl ?? "",
               isFree: l.isFree ?? false,
+              duration: l.duration ? String(Math.floor(l.duration / 60)) : "",
             })),
           }))
         );
@@ -66,14 +70,14 @@ export default function EditCoursePage() {
   }, [slug, courseId]);
 
   function addModule() {
-    setModules([...modules, { title: `모듈 ${modules.length + 1}`, lessons: [], open: true }]);
+    setModules([...modules, { title: `모듈 ${modules.length + 1}`, drip: "", lessons: [], open: true }]);
   }
   function removeModule(mi: number) {
     setModules(modules.filter((_, i) => i !== mi));
   }
   function addLesson(mi: number) {
     const updated = [...modules];
-    updated[mi].lessons.push({ title: "", type: "TEXT", content: "", videoUrl: "", isFree: false });
+    updated[mi].lessons.push({ title: "", type: "TEXT", content: "", videoUrl: "", isFree: false, duration: "" });
     setModules(updated);
   }
   function removeLesson(mi: number, li: number) {
@@ -104,12 +108,14 @@ export default function EditCoursePage() {
         price: isFree ? null : parseInt(price) || 0,
         modules: modules.map((m) => ({
           title: m.title,
+          drip: m.drip ? parseInt(m.drip) : null,
           lessons: m.lessons.filter((l) => l.title.trim()).map((l) => ({
             title: l.title,
             type: l.type,
             content: l.content,
             videoUrl: l.videoUrl,
             isFree: l.isFree,
+            duration: l.duration ? parseInt(l.duration) * 60 : null,
           })),
         })),
       }),
@@ -211,9 +217,21 @@ export default function EditCoursePage() {
                   <Input
                     value={mod.title}
                     onChange={(e) => updateModule(mi, "title", e.target.value)}
-                    className="h-8 text-sm font-medium border-0 bg-transparent p-0 focus-visible:ring-0"
+                    className="h-8 text-sm font-medium border-0 bg-transparent p-0 focus-visible:ring-0 flex-1"
                     placeholder="모듈 제목"
                   />
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Input
+                      type="number"
+                      value={mod.drip}
+                      onChange={(e) => updateModule(mi, "drip", e.target.value)}
+                      className="h-7 w-20 text-xs text-center"
+                      placeholder="0일"
+                      min="0"
+                      title="수강 신청 후 N일 뒤 공개 (0 또는 빈칸 = 즉시)"
+                    />
+                    <span className="text-xs text-muted-foreground">일 후 공개</span>
+                  </div>
                   <button type="button" onClick={() => updateModule(mi, "open", !mod.open)} className="text-muted-foreground hover:text-foreground">
                     {mod.open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   </button>
@@ -241,7 +259,17 @@ export default function EditCoursePage() {
                             ))}
                           </div>
                           {lesson.type === "VIDEO" ? (
-                            <Input placeholder="YouTube / Vimeo URL" value={lesson.videoUrl} onChange={(e) => updateLesson(mi, li, "videoUrl", e.target.value)} className="h-8 text-sm" />
+                            <div className="space-y-1.5">
+                              <Input placeholder="YouTube / Vimeo URL" value={lesson.videoUrl} onChange={(e) => updateLesson(mi, li, "videoUrl", e.target.value)} className="h-8 text-sm" />
+                              <Input
+                                type="number"
+                                placeholder="재생시간 (분)"
+                                value={lesson.duration}
+                                onChange={(e) => updateLesson(mi, li, "duration", e.target.value)}
+                                className="h-8 text-sm w-36"
+                                min="0"
+                              />
+                            </div>
                           ) : (
                             <Textarea placeholder="레슨 내용..." value={lesson.content} onChange={(e) => updateLesson(mi, li, "content", e.target.value)} rows={2} className="text-sm resize-none" />
                           )}
