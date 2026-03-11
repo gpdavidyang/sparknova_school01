@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { Users, BookOpen, Building2, CreditCard, TrendingUp, Flag, Package } from "lucide-react";
+import { Users, BookOpen, Building2, CreditCard, TrendingUp, Flag, Package, Shield } from "lucide-react";
+import Link from "next/link";
 
 export default async function SuperAdminPage() {
   const session = await auth();
@@ -13,17 +14,7 @@ export default async function SuperAdminPage() {
   });
   if (me?.role !== "SUPER_ADMIN") redirect("/");
 
-  const [
-    totalUsers,
-    totalCommunities,
-    totalCourses,
-    totalEnrollments,
-    totalPayments,
-    totalReports,
-    totalDigitalProducts,
-    recentUsers,
-    recentPayments,
-  ] = await Promise.all([
+  const [totalUsers, totalCommunities, totalCourses, totalEnrollments, totalPayments, totalReports, totalDigitalProducts] = await Promise.all([
     db.user.count(),
     db.community.count(),
     db.course.count(),
@@ -31,6 +22,9 @@ export default async function SuperAdminPage() {
     db.payment.aggregate({ _sum: { amount: true }, _count: true, where: { status: "PAID" } }),
     db.report.count({ where: { status: "PENDING" } }),
     db.digitalProduct.count(),
+  ]);
+
+  const [recentUsers, recentPayments, pendingInsurance] = await Promise.all([
     db.user.findMany({
       orderBy: { createdAt: "desc" },
       take: 10,
@@ -40,8 +34,9 @@ export default async function SuperAdminPage() {
       where: { status: "PAID" },
       orderBy: { paidAt: "desc" },
       take: 10,
-      select: { id: true, amount: true, orderName: true, paidAt: true, user: { select: { name: true, email: true } } },
+      select: { id: true, amount: true, tossOrderId: true, paidAt: true, user: { select: { name: true, email: true } } },
     }),
+    db.insuranceGuarantee.count({ where: { status: "PENDING" } }),
   ]);
 
   const revenue = totalPayments._sum.amount ?? 0;
@@ -56,6 +51,7 @@ export default async function SuperAdminPage() {
     { label: "결제 건수", value: paymentCount.toLocaleString(), icon: CreditCard, color: "bg-teal-50 text-teal-500" },
     { label: "처리 대기 신고", value: totalReports.toLocaleString(), icon: Flag, color: "bg-red-50 text-red-500" },
     { label: "디지털 상품", value: totalDigitalProducts.toLocaleString(), icon: Package, color: "bg-orange-50 text-orange-500" },
+    { label: "보증보험 심사 대기", value: pendingInsurance.toLocaleString(), icon: Shield, color: "bg-indigo-50 text-indigo-500" },
   ];
 
   return (
@@ -79,6 +75,17 @@ export default async function SuperAdminPage() {
           </div>
         ))}
       </div>
+
+      {/* 바로가기 */}
+      {pendingInsurance > 0 && (
+        <Link href="/admin/insurance" className="flex items-center gap-3 p-4 rounded-xl border-2 border-yellow-200 bg-yellow-50 hover:bg-yellow-100 transition-colors">
+          <Shield className="h-5 w-5 text-yellow-600 shrink-0" />
+          <div>
+            <p className="text-sm font-semibold text-yellow-700">보증보험 심사 대기 {pendingInsurance}건</p>
+            <p className="text-xs text-yellow-600">클릭하여 심사 페이지로 이동</p>
+          </div>
+        </Link>
+      )}
 
       <div className="grid md:grid-cols-2 gap-6">
         {/* 최근 가입 회원 */}
@@ -124,7 +131,7 @@ export default async function SuperAdminPage() {
                     <CreditCard className="h-3.5 w-3.5 text-green-600" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{p.orderName}</p>
+                    <p className="text-sm font-medium truncate">{p.tossOrderId ?? "결제"}</p>
                     <p className="text-xs text-muted-foreground truncate">{p.user.name ?? p.user.email}</p>
                   </div>
                   <div className="text-right shrink-0">

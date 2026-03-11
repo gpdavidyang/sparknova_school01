@@ -23,6 +23,7 @@ model User {
   bio           String?
   avatarUrl     String?
   coverUrl      String?
+  phone         String?
   role          UserRole  @default(MEMBER)
   locale        String    @default("ko")
   timezone      String    @default("Asia/Seoul")
@@ -177,8 +178,9 @@ model Community {
   products        Product[]
   referralCodes   ReferralCode[]
   userLevels      UserLevel[]
-  digitalProducts DigitalProduct[]
-  coupons         Coupon[]
+  digitalProducts      DigitalProduct[]
+  coupons              Coupon[]
+  insuranceGuarantees  InsuranceGuarantee[]
 
   @@map("communities")
 }
@@ -653,6 +655,7 @@ model ReferralRecord {
   codeId      String
   referrerId  String
   referredId  String
+  courseId     String?        // 추천 관련 강좌 (진도율 기반 보상용)
   status      ReferralStatus @default(PENDING)
   convertedAt DateTime?
   createdAt   DateTime       @default(now())
@@ -670,7 +673,9 @@ model ReferralReward {
   recordId  String
   userId    String
   type      RewardType
-  value     Int
+  value     Int          // 현재 지급된 금액
+  maxValue  Int?         // 최대 보상 금액 (진도율 100% 기준)
+  tier      Int          @default(1) // 1=구매즉시(30%), 2=진도30%(60%), 3=진도70%(100%)
   status    RewardStatus @default(PENDING)
   grantedAt DateTime?
   createdAt DateTime     @default(now())
@@ -959,4 +964,35 @@ model CouponUsage {
 enum DiscountType {
   PERCENTAGE
   FIXED
+}
+
+// ============================================================
+// 보증보험
+// ============================================================
+
+model InsuranceGuarantee {
+  id            String              @id @default(cuid())
+  communityId   String
+  amount        Int                 @default(10000000) // 보증금액 (기본 1,000만 원)
+  insurerName   String              // 보험사명
+  policyNumber  String              // 증권번호
+  fileUrl       String              // 증권 파일 URL
+  issuedAt      DateTime            // 증권 발급일
+  expiresAt     DateTime            // 만료일
+  status        InsuranceStatus     @default(PENDING)
+  reviewedAt    DateTime?
+  reviewNote    String?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@map("insurance_guarantees")
+}
+
+enum InsuranceStatus {
+  PENDING    // 제출 대기/심사 중
+  APPROVED   // 승인
+  REJECTED   // 반려
+  EXPIRED    // 만료
 }

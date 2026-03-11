@@ -125,6 +125,23 @@ export async function notifyLevelUp({
   });
 }
 
+/** 회원가입 환영 알림 */
+export async function notifyWelcome({
+  phone,
+  userName,
+}: {
+  phone: string;
+  userName: string;
+}) {
+  return sendKakaoAlimtalk({
+    to: phone,
+    templateId: "KA01TP_WELCOME",
+    variables: {
+      "#{이름}": userName,
+    },
+  });
+}
+
 /** 수료증 발급 알림 */
 export async function notifyCertificateIssued({
   phone,
@@ -141,6 +158,29 @@ export async function notifyCertificateIssued({
     variables: {
       "#{이름}": userName,
       "#{강좌명}": courseTitle,
+    },
+  });
+}
+
+/** 이벤트 리마인더 알림 */
+export async function notifyEventReminder({
+  phone,
+  userName,
+  eventTitle,
+  startAt,
+}: {
+  phone: string;
+  userName: string;
+  eventTitle: string;
+  startAt: string;
+}) {
+  return sendKakaoAlimtalk({
+    to: phone,
+    templateId: "KA01TP_EVENT_REMINDER",
+    variables: {
+      "#{이름}": userName,
+      "#{이벤트명}": eventTitle,
+      "#{시작시간}": startAt,
     },
   });
 }

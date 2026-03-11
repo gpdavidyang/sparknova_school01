@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { uploadFile } from "@/lib/storage";
 import { nanoid } from "nanoid";
 
-const MAX_SIZE = 100 * 1024 * 1024; // 100MB
+const MAX_SIZE = 50 * 1024 * 1024; // 50MB
 const ALLOWED_TYPES = [
   "application/pdf",
   "application/zip",
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "지원하지 않는 파일 형식입니다." }, { status: 400 });
   }
   if (file.size > MAX_SIZE) {
-    return NextResponse.json({ error: "파일 크기는 100MB 이하여야 합니다." }, { status: 400 });
+    return NextResponse.json({ error: "파일 크기는 50MB 이하여야 합니다." }, { status: 400 });
   }
 
   const ext = file.name.split(".").pop() ?? "bin";

@@ -30,9 +30,12 @@ export async function PATCH(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { emailNotifComments, emailNotifPayments, currentPassword, newPassword } = body;
+  const { phone, emailNotifComments, emailNotifPayments, currentPassword, newPassword } = body;
 
   const updateData: Record<string, unknown> = {};
+
+  // 전화번호
+  if (phone !== undefined) updateData.phone = phone || null;
 
   // 이메일 알림 설정
   if (typeof emailNotifComments === "boolean") updateData.emailNotifComments = emailNotifComments;

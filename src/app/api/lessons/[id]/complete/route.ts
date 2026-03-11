@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { grantPoints } from "@/lib/gamification";
 import { checkAndGrantLessonBadges, checkAndGrantCourseBadges } from "@/lib/badges";
+import { checkReferralTierUpgrade } from "@/lib/referral-tiers";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -72,6 +73,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     await grantPoints({ userId: session.user.id, communityId, type: "COURSE_COMPLETED" });
     void checkAndGrantCourseBadges({ userId: session.user.id, communityId });
   }
+
+  // 단계별 Referral 보상 업그레이드 체크 (진도율 변경 시)
+  void checkReferralTierUpgrade(session.user.id, courseId, progressPct / 100);
 
   return NextResponse.json({ completed: true, progress: progressPct, courseCompleted: progressPct === 100 });
 }

@@ -2,7 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getLevelConfig } from "@/lib/gamification";
-import { Settings, BookOpen, Users, Star, Sliders, ChevronRight, Package, Flag, Ticket } from "lucide-react";
+import { Settings, BookOpen, Users, Star, Sliders, ChevronRight, Package, Flag, Ticket, Shield } from "lucide-react";
 import Link from "next/link";
 import { CoursePublishToggle } from "@/components/admin/course-publish-toggle";
 import { MemberActions } from "@/components/admin/member-actions";
@@ -46,6 +46,7 @@ export default async function AdminPage({ params, searchParams }: Props) {
     { href: `/community/${slug}/admin/digital-products`, label: "디지털 상품 관리", icon: Package },
     { href: `/community/${slug}/admin/reports`, label: "신고 관리", icon: Flag },
     { href: `/community/${slug}/admin/coupons`, label: "쿠폰 관리", icon: Ticket },
+    { href: `/community/${slug}/admin/insurance`, label: "보증보험", icon: Shield },
   ];
 
   return (

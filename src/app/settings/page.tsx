@@ -11,6 +11,7 @@ export default async function SettingsPage() {
   const user = await db.user.findUnique({
     where: { id: session.user.id },
     select: {
+      phone: true,
       emailNotifComments: true,
       emailNotifPayments: true,
       accounts: { where: { provider: "credentials" }, select: { id: true } },
@@ -32,6 +33,7 @@ export default async function SettingsPage() {
       </div>
 
       <SettingsForm
+        phone={user.phone ?? ""}
         emailNotifComments={user.emailNotifComments}
         emailNotifPayments={user.emailNotifPayments}
         hasCredentials={user.accounts.length > 0}

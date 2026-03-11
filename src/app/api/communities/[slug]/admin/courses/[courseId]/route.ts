@@ -69,6 +69,11 @@ export async function PUT(req: NextRequest, { params }: Params) {
   const { title, description, thumbnailUrl, isFree, price, modules } = await req.json();
   if (!title?.trim()) return NextResponse.json({ error: "강좌 제목을 입력해주세요." }, { status: 400 });
 
+  // 강좌 가격 상한 50만원
+  if (!isFree && price != null && price > 500000) {
+    return NextResponse.json({ error: "강좌 가격은 최대 500,000원까지 설정할 수 있습니다." }, { status: 400 });
+  }
+
   type LessonInput = { title: string; type: string; content?: string; videoUrl?: string; isFree?: boolean; duration?: number | null };
   type ModuleInput = { title: string; drip?: number | null; lessons: LessonInput[] };
 

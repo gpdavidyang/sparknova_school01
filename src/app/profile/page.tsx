@@ -2,8 +2,9 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { DEFAULT_LEVELS } from "@/lib/gamification";
+import { calculateStudentTier, calculateInstructorTier } from "@/lib/promotion-tiers";
 import { ProfileForm } from "@/components/profile/profile-form";
-import { Users, BookOpen, Star, Trophy } from "lucide-react";
+import { Users, BookOpen, Star, Trophy, Award, Crown } from "lucide-react";
 import Link from "next/link";
 
 export default async function ProfilePage() {
@@ -47,6 +48,12 @@ export default async function ProfilePage() {
     ? DEFAULT_LEVELS.find((l) => l.level === topLevel.level)?.name ?? `Lv.${topLevel.level}`
     : null;
 
+  // 등급 계산
+  const [studentTier, instructorTier] = await Promise.all([
+    calculateStudentTier(session.user.id),
+    calculateInstructorTier(session.user.id),
+  ]);
+
   return (
     <div className="max-w-2xl mx-auto py-8 px-4 space-y-8">
       {/* 커버 & 아바타 */}
@@ -77,16 +84,31 @@ export default async function ProfilePage() {
           {new Date(user.createdAt).toLocaleDateString("ko-KR", { year: "numeric", month: "long" })} 가입
         </p>
 
-        {/* 레벨/포인트 뱃지 */}
-        {levelName && (
-          <div className="flex items-center gap-2 pt-2">
+        {/* 등급 뱃지 */}
+        <div className="flex flex-wrap items-center gap-2 pt-2">
+          {levelName && (
             <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">
               <Trophy className="h-3 w-3" />
               {levelName}
             </span>
+          )}
+          <span className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full ${studentTier.bgColor} ${studentTier.color} font-medium`}>
+            <Award className="h-3 w-3" />
+            {studentTier.label}
+          </span>
+          {instructorTier.tier !== "NEW" && (
+            <span className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full ${instructorTier.bgColor} ${instructorTier.color} font-medium`}>
+              <Crown className="h-3 w-3" />
+              {instructorTier.label}
+            </span>
+          )}
+          {totalPoints > 0 && (
             <span className="text-xs text-muted-foreground">{totalPoints.toLocaleString()}P 누적</span>
-          </div>
-        )}
+          )}
+          {studentTier.discountPct > 0 && (
+            <span className="text-xs text-green-600">디지털 상품 {studentTier.discountPct}% 할인</span>
+          )}
+        </div>
       </div>
 
       {/* 프로필 편집 폼 */}

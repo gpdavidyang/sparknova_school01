@@ -2,19 +2,22 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Bell, Lock, Loader2 } from "lucide-react";
+import { Bell, Lock, Loader2, Phone } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
 interface Props {
+  phone: string;
   emailNotifComments: boolean;
   emailNotifPayments: boolean;
   hasCredentials: boolean;
 }
 
-export function SettingsForm({ emailNotifComments, emailNotifPayments, hasCredentials }: Props) {
+export function SettingsForm({ phone: initialPhone, emailNotifComments, emailNotifPayments, hasCredentials }: Props) {
+  const [phoneValue, setPhoneValue] = useState(initialPhone);
+  const [savingPhone, setSavingPhone] = useState(false);
   const [notifComments, setNotifComments] = useState(emailNotifComments);
   const [notifPayments, setNotifPayments] = useState(emailNotifPayments);
   const [savingNotif, setSavingNotif] = useState(false);
@@ -23,6 +26,18 @@ export function SettingsForm({ emailNotifComments, emailNotifPayments, hasCreden
   const [newPw, setNewPw] = useState("");
   const [confirmPw, setConfirmPw] = useState("");
   const [savingPw, setSavingPw] = useState(false);
+
+  async function handleSavePhone() {
+    setSavingPhone(true);
+    const res = await fetch("/api/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone: phoneValue.replace(/-/g, "").trim() || null }),
+    });
+    setSavingPhone(false);
+    if (!res.ok) { toast.error("저장에 실패했습니다."); return; }
+    toast.success("전화번호가 저장되었습니다.");
+  }
 
   async function handleSaveNotif() {
     setSavingNotif(true);
@@ -81,6 +96,31 @@ export function SettingsForm({ emailNotifComments, emailNotifPayments, hasCreden
 
   return (
     <div className="space-y-6">
+      {/* 전화번호 (카카오 알림톡) */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Phone className="h-4 w-4" />전화번호
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="space-y-1.5">
+            <Label>휴대폰 번호</Label>
+            <Input
+              type="tel"
+              placeholder="01012345678"
+              value={phoneValue}
+              onChange={(e) => setPhoneValue(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">카카오 알림톡 수신에 사용됩니다. (결제·가입·활동 알림)</p>
+          </div>
+          <Button onClick={handleSavePhone} disabled={savingPhone} size="sm" className="bg-blue-500 hover:bg-blue-600">
+            {savingPhone ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+            저장
+          </Button>
+        </CardContent>
+      </Card>
+
       {/* 이메일 알림 */}
       <Card>
         <CardHeader>

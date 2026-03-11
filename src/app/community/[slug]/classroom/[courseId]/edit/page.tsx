@@ -194,7 +194,10 @@ export default function EditCoursePage() {
                 ))}
               </div>
               {!isFree && (
-                <Input type="number" placeholder="가격 (원)" value={price} onChange={(e) => setPrice(e.target.value)} min="0" className="mt-2" />
+                <div className="mt-2 space-y-1">
+                  <Input type="number" placeholder="가격 (원)" value={price} onChange={(e) => setPrice(e.target.value)} min="0" max="500000" />
+                  <p className="text-xs text-muted-foreground">최대 500,000원 (수강생 보호 정책)</p>
+                </div>
               )}
             </div>
           </CardContent>

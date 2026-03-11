@@ -66,13 +66,13 @@ export async function POST(req: NextRequest) {
         data: { enrollCount: { increment: 1 } },
       });
 
-      // 카카오 알림톡 (전화번호 있는 경우)
+      // 카카오 알림톡 + 이메일 알림
       const user = await db.user.findUnique({
         where: { id: session.user.id },
-        select: { name: true, email: true, emailNotifPayments: true },
+        select: { name: true, email: true, phone: true, emailNotifPayments: true },
       });
-      if (user?.name) {
-        void notifyPaymentSuccess({ phone: "", userName: user.name, orderName: tossData.orderName, amount });
+      if (user?.phone) {
+        void notifyPaymentSuccess({ phone: user.phone, userName: user.name ?? "회원", orderName: tossData.orderName, amount });
       }
       if (user?.email && user.emailNotifPayments) {
         void sendPaymentReceiptEmail({
@@ -147,13 +147,13 @@ export async function POST(req: NextRequest) {
         data: { memberCount: { increment: 1 } },
       });
 
-      // 카카오 알림톡
+      // 카카오 알림톡 + 이메일 알림
       const commUser = await db.user.findUnique({
         where: { id: session.user.id },
-        select: { name: true, email: true, emailNotifPayments: true },
+        select: { name: true, email: true, phone: true, emailNotifPayments: true },
       });
-      if (commUser?.name) {
-        void notifyPaymentSuccess({ phone: "", userName: commUser.name, orderName: tossData.orderName, amount });
+      if (commUser?.phone) {
+        void notifyPaymentSuccess({ phone: commUser.phone, userName: commUser.name ?? "회원", orderName: tossData.orderName, amount });
       }
       if (commUser?.email && commUser.emailNotifPayments) {
         void sendPaymentReceiptEmail({
